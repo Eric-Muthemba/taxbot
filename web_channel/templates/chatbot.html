@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+		.chat-container {
+			max-width: 600px;
+			margin: 50px auto;
+			background-color: #fff;
+			border-radius: 8px;
+			overflow: hidden;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+		}
+
+		.message-container {
+			display: flex;
+			flex-direction: column;
+            overflow: scroll;
+            max-height: 450px;
+		}
+
+		.message {
+			padding: 10px;
+			margin: 10px;
+			border-radius: 15px;
+			max-width: 70%;
+			word-wrap: break-word;
+			display: flex;
+			align-items: center;
+		}
+
+		.sender-message {
+			background-color: #84a0de;
+			color: #fff;
+			align-self: flex-start;
+		}
+
+		.receiver-message {
+			background-color: #84a0de;
+			color: #fff;
+			align-self: flex-end;
+		}
+
+		.avatar {
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			margin-right: 10px;
+		}
+
+        .input_box {
+			padding: 10px;
+			margin: 10px;
+			border-radius: 20px;
+			max-width: 100%;
+			word-wrap: break-word;
+			display: flex;
+			align-items: center;
+		}
+
+		.input_box input {
+			width: calc(100% - 10px);
+			padding: 8px;
+			margin: 10px;
+			border: 1px solid #ddd;
+			border-radius: 5px;
+		}
+
+		.input_box button {
+			padding: 8px;
+			margin: 10px;
+			background-color: #205ce3;
+			color: #fff;
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+		}
+
+		.button-container {
+            display: flex;
+            gap: 10px; /* Adds space between buttons */
+            padding: 10px;
+			margin: 10px;
+            position: relative;
+            justify-content: center;
+
+        }
+        .button-container button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px; /* Makes buttons rounded */
+            background-color: #007BFF; /* Button background color */
+            color: white; /* Button text color */
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+
+
+        }
+        .button-container button:hover {
+            background-color: #0056b3; /* Darker background on hover */
+        }
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 4px;
+            width: 100%;
+            max-width: 400px;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+        input[type="file"]:hover {
+            border-color: #666;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .connection-status{
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+
+        }
+
+       .status-dot {
+                            height: 10px;
+                            width: 10px;
+                            background-color: red;
+                            border-radius: 50%;
+                            display: inline-block;
+                            margin-right: 10px;
+        }
+
+	</style>
+<section class="text-gray-700 body-font">
+    <div class="connection-status">
+        <span id="connection-status-dot" class="status-dot"></span>
+        <span id="connection-status-text">Disconnected</span>
+    </div>
+    <div class="chat-container" id="chat_container">
+		<div class="message-container" id="chat">
+
+
+		</div>
+        <div id="chat_container_input">
+            <div class="input_box" id="input-box">
+                <input type="text" id="chat-input"
+                    placeholder="Type your message...">
+                <button id="send-button">Send</button>
+                <button id="reset-button" class="fa fa-refresh" ></button>
+
+            </div>
+            <div class="button-container" id="button-container" style="display: none">
+                <button id="yes">YES</button>
+                <button id="no">NO</button>
+                 <button id="reset-button1" class="fa fa-refresh" ></button>
+            </div>
+            <form id="upload-form" style="display: none">
+            <input type="file" id="fileInput" accept="application/pdf">
+             <button id="reset-button2" class="fa fa-refresh" ></button>
+        </form>
+        </div>
+
+
+	</div>
+</section>
+<script>
+        let chatSocket;
+        let reconnectInterval = 1000; // Initial reconnection interval in milliseconds
+        let maxReconnectInterval = 30000; // Maximum reconnection interval in milliseconds
+
+        const statusDot = document.getElementById('connection-status-dot');
+        const statusText = document.getElementById('connection-status-text');
+
+        window.onload = PrepopulateInitialConvo();
+
+        function initializeWebSocket() {
+            chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+            chatSocket.onopen = function (event) {
+                console.log('WebSocket is open now.');
+                statusDot.style.backgroundColor = 'green';
+                statusText.textContent = 'Connected';
+                reconnectInterval = 1000;
+            };
+            chatSocket.onmessage = function (e) {
+                const data = JSON.parse(e.data);
+                SetBotResponse(data)
+                var chatbotContainer = document.getElementById('chat');
+                var content = `<div class="message sender-message">
+                <img src= "https://m.economictimes.com/thumb/msid-77525190,width-1200,height-900,resizemode-4,imgsize-112483/tax.jpg"
+                    alt="Sender Avatar"
+                    class="avatar">` + data.message + `</div>`
+
+                var newContent = createElementFromHTML(content);
+                chatbotContainer.appendChild(newContent);
+                localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
+                scrollSmoothlyToBottom(id = "chat")
+
+
+            };
+            chatSocket.onclose = function (e) {
+                console.error('Chat socket closed unexpectedly');
+                statusDot.style.backgroundColor = 'red';
+                statusText.textContent = 'Disconnected';
+                attemptReconnect();
+            };
+            chatSocket.onerror = function (error) {
+                statusDot.style.backgroundColor = 'orange';
+                statusText.textContent = 'Error';
+                console.error('WebSocket error observed:', error);
+                chatSocket.close();
+            };
+            document.querySelector('#chat-input').focus();
+            document.querySelector('#chat-input').onkeyup = function (e) {
+                if (e.keyCode === 13) {  // Enter key
+                    document.querySelector('#send-button').click();
+                }
+            };
+            document.querySelector('#send-button').onclick = function (e) {
+                const messageInputDom = document.querySelector('#chat-input');
+                const message = messageInputDom.value;
+
+                SetUserInput(message)
+                messageInputDom.value = '';
+
+            };
+            document.querySelector('#yes').onclick = function (e) {
+                var message = "YES"
+                SetUserInput(message)
+
+            };
+            document.querySelector('#no').onclick = function (e) {
+                var message = "No"
+                SetUserInput(message)
+            };
+            document.querySelector('#reset-button').onclick = function (e) {
+                //delete channel from cookie
+
+                //refresh
+
+                SetUserInput('reset');
+            
+            };
+            document.querySelector('#reset-button1').onclick = function (e) {
+                //delete channel from cookie
+
+                //refresh
+
+                SetUserInput('reset');
+
+            };
+            document.querySelector('#reset-button2').onclick = function (e) {
+                //delete channel from cookie
+
+                //refresh
+
+                SetUserInput('reset');
+
+            };
+            var fileInput = document.getElementById('upload-form')
+            fileInput.addEventListener('change', function () {
+                var chatbotContainer = document.getElementById('chat');
+                var file_input = document.getElementById('fileInput')
+                var file = file_input.files[0];
+                if (file) {
+                    var fileType = file.type;
+                    if (fileType !== 'application/pdf') {
+                        var content = `<div class="message receiver-message">
+                                        <img src= "https://banner2.cleanpng.com/20180816/syp/kisspng-computer-icons-favicon-user-iconfinder-personal-we-yue-jia-fresh-my-user-icon-svg-png-icon-free-downl-5b7590572d9999.5378872315344313191868.jpg"
+                                             alt="Receiver Avatar"
+                                             class="avatar"> Invalid file type, kindly upload a pdf P9 - We currently don't support images.</div>`
+                    } else {
+                        var content = `<div class="message receiver-message">
+                                        <img src= "https://banner2.cleanpng.com/20180816/syp/kisspng-computer-icons-favicon-user-iconfinder-personal-we-yue-jia-fresh-my-user-icon-svg-png-icon-free-downl-5b7590572d9999.5378872315344313191868.jpg"
+                                             alt="Receiver Avatar"
+                                             class="avatar">
+                                        <img src= "https://png.pngtree.com/png-clipart/20220612/original/pngtree-pdf-file-icon-png-png-image_7965915.png"
+                                            alt="pdf"
+                                            width="70" height="80">
+                                        </div>`
+                        var newContent = createElementFromHTML(content);
+                        // Append the new content to the chatbot container
+                        chatbotContainer.appendChild(newContent);
+                        // Save the current state of the chatbot container to local storage
+                        localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
+
+                        const formData = new FormData();
+                        formData.append('file', file);
+                        formData.append('message', ''); // Add any additional data if needed
+
+                        fetch('/jobs/conversation/file_upload', {
+                            method: 'POST',
+                            body: formData,
+                            credentials: 'same-origin',
+                            headers: {
+                                'X-CSRFToken': getCookie('csrftoken')
+                            }
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.message !== "-") {
+                                    // Define the content to be added
+                                    var content = `<div class="message sender-message">
+                                                        <img src= "https://m.economictimes.com/thumb/msid-77525190,width-1200,height-900,resizemode-4,imgsize-112483/tax.jpg"
+                                                            alt="Sender Avatar"
+                                                            class="avatar">` + data.message + `</div>`
+
+                                    var newContent = createElementFromHTML(content);
+                                    // Append the new content to the chatbot container
+                                    chatbotContainer.appendChild(newContent);
+
+                                    // Save the current state of the chatbot container to local storage
+                                    localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
+
+                                    SetBotResponse({})
+
+
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                            });
+                    }
+
+
+                }
+                scrollSmoothlyToBottom(id = "chat")
+
+            });
+        }
+
+        function attemptReconnect() {
+                setTimeout(function () {
+                    console.log('Attempting to reconnect...');
+                    statusDot.style.backgroundColor = 'red';
+                    statusText.textContent = 'Disconnected';
+                    // Increase the reconnection interval for the next attempt
+                    reconnectInterval = Math.min(reconnectInterval * 2, maxReconnectInterval);
+                    initializeWebSocket();
+                }, reconnectInterval);
+            }
+
+        function createElementFromHTML(htmlString) {
+            var div = document.createElement('div');
+            div.innerHTML = htmlString.trim();
+            return div.firstChild;
+        }
+
+        function scrollSmoothlyToBottom(id){
+                    const element = $(`#${id}`);
+                    element.animate({
+                        scrollTop: element.prop("scrollHeight")
+                    }, 500);
+                }
+
+        function PrepopulateInitialConvo(){
+            var chatbotContainer = document.getElementById('chat');
+            var chat_container_input = document.getElementById('chat_container_input');
+
+            // Load content from local storage when the page loads
+            var savedContent = localStorage.getItem('chatbotContent');
+            var savedContainerInput = localStorage.getItem('ChatContainerInput');
+            if (savedContent) {
+                chatbotContainer.innerHTML = savedContent;
+            }
+            if (savedContainerInput) {
+                chat_container_input.innerHTML = savedContainerInput;
+            }
+            scrollSmoothlyToBottom(id="chat")
+            // Initialize the WebSocket connection
+            initializeWebSocket();
+        }
+
+        function SetBotResponse(data){
+           var chatbotContainer = document.getElementById('chat');
+           var input_box = document.getElementById('input-box');
+           var button_container = document.getElementById('button-container');
+           var upload_form = document.getElementById('upload-form');
+
+            if(data.action === "START" ){
+                    localStorage.setItem('chatbotContent', ``);
+                    chatbotContainer.innerHTML="";
+                }
+            if (data.keyboard_type=="options") {
+
+                    input_box.style.display = "none"
+                    upload_form.style.display = "none"
+                    button_container.style.display = "flex"
+
+                }
+            else if (data.keyboard_type=="upload_pdf") {
+
+                    input_box.style.display = "none"
+                    upload_form.style.display = "flex"
+                    button_container.style.display = "none"
+
+                }
+            else if (data.keyboard_type=="validate") {
+
+                    var continue_button = document.getElementById('yes');
+                    var cancel_button = document.getElementById('no');
+
+                    continue_button.innerText = "PAID"
+                    cancel_button.innerText = "CANCEL"
+
+
+
+                    input_box.style.display = "none"
+                    upload_form.style.display = "none"
+                    button_container.style.display = "flex"
+                }
+            else {
+                    input_box.style.display = "flex"
+                    upload_form.style.display = "none"
+                    button_container.style.display = "none"
+                }
+
+
+            var chat_container_input = document.getElementById('chat_container_input');
+            localStorage.setItem('ChatContainerInput', chat_container_input.innerHTML);
+
+        }
+
+        function SetUserInput(message) {
+            var chatbotContainer = document.getElementById('chat');
+            var content = `<div class="message receiver-message">
+                    <img src= "https://banner2.cleanpng.com/20180816/syp/kisspng-computer-icons-favicon-user-iconfinder-personal-we-yue-jia-fresh-my-user-icon-svg-png-icon-free-downl-5b7590572d9999.5378872315344313191868.jpg"
+                         alt="Receiver Avatar"
+                         class="avatar">`+ message +`</div>`
+
+            var newContent = createElementFromHTML(content);
+            chatbotContainer.appendChild(newContent);
+            localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
+            scrollSmoothlyToBottom(id="chat")
+
+            chatSocket.send(JSON.stringify({ 'message': message  }));
+        }
+
+        function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            // Does this cookie string begin with the name we want?
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+
+
+
+    </script>
+{% endblock content %}
+
+
+
+
+
+
+
+
+
+
+
+
