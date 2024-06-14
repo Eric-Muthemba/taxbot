@@ -91,12 +91,12 @@ DATABASES = {
 }
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
 
-'''CHANNEL_LAYERS = {
+CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
     },
-}'''
-
+}
+'''
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -104,7 +104,7 @@ CHANNEL_LAYERS = {
             "hosts": [os.environ['REDIS_URL']],
         },
     },
-}
+}'''
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
