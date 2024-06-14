@@ -21,7 +21,7 @@ app.autodiscover_tasks()
 with app.pool.acquire(block=True) as conn:
     exchange = kombu.Exchange( name='myexchange', type='direct', durable=True, channel=conn)
     exchange.declare()
-    mpesa_queue = kombu.Queue(  name='mpesa', exchange=exchange, routing_key='mpesa',  channel=conn,message_ttl=600, queue_arguments={ 'x-queue-type': 'classic' }, durable=True)
+    mpesa_queue = kombu.Queue(  name='excel_filing_and_file_tax_on_itax', exchange=exchange, routing_key='excel_filing_and_file_tax_on_itax',  channel=conn,message_ttl=600, queue_arguments={ 'x-queue-type': 'classic' }, durable=True)
     mpesa_queue.declare()
     excel_filing_queue = kombu.Queue(name='excel_filing', exchange=exchange, routing_key='excel_filing_queue', channel=conn, message_ttl=600,queue_arguments={'x-queue-type': 'classic'}, durable=True)
     excel_filing_queue.declare()

@@ -8,8 +8,8 @@ db = database()
 
 class Excel():
     def __init__(self, saving_name,P9_data=None):
-        self.template_file_path = os.getenv("TEMPLATE_FILE")
-        self.saving_path =  os.getenv("GENERATED_DOCUMENT_FOLDER") + f'{saving_name}.xlsm'
+        self.template_file_path = os.getenv('BASE_PATH')+os.getenv("TEMPLATE_FILE")
+        self.saving_path =  os.getenv('BASE_PATH')+os.getenv("GENERATED_DOCUMENT_FOLDER") + f'{saving_name}.xlsm'
         self.channel_id = saving_name
         self.P9_data = P9_data
 

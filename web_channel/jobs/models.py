@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import AbstractUser
 from django_extensions.db.fields import ShortUUIDField
 import shortuuid
-
+import jsonfield
 class User(AbstractUser):
     is_organisor = models.BooleanField(default=True)
     is_agent = models.BooleanField(default=False)
@@ -43,10 +43,17 @@ class Job(models.Model):
     kra_pin = models.CharField(max_length=20,null=True)
     kra_password = models.CharField(max_length=20,null=True)
     nhif_no = models.CharField(max_length=20,null=True)
+    file_nil = models.BooleanField(default=False)
+    phone_number = models.CharField(max_length=20,null=True)
+    expected_payment_amount = models.IntegerField(default=1)
+    output_option = models.CharField(max_length=10,null=True)
+    mpesa_paid_amount = models.IntegerField(default=0)
+    mpesa_reference = models.CharField(max_length=20,null=True)
+    screenshot_path = models.CharField(max_length=500,null=True)
     payment_status = models.CharField(choices=PAYMENT_STATUS,max_length=20,default="Unpaid")
     status = models.CharField(choices=STATUS,max_length=20,default="In_Progress")
     step = models.CharField(max_length=50,default="START")
-    tax_document_extracted_info = JSONField(default=list)
+    tax_document_extracted_info = jsonfield.JSONField(default=list)
     #organisation = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     agent = models.ForeignKey("Agent", null=True, blank=True, on_delete=models.SET_NULL)
     #category = models.ForeignKey("Category", related_name="jobs", null=True, blank=True, on_delete=models.SET_NULL)

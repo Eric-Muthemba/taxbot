@@ -68,14 +68,17 @@ class database():
 
     def update(self,data,channel,channel_id,session_status="Active"):
         cursor = self.connection.cursor()
-        values = [data[key] for key in data] + [channel,channel_id,session_status]
+        #values = [data[key] for key in data] + [channel_id,session_status]
+        values = []
         updates = ""
         for key in data:
-            updates +=f"{key}=%s"
+            updates +=f"{key}='{data[key]}' "
 
         query = f"""
-        UPDATE jobs_job SET {updates} WHERE channel=%s and channel_id=%s and session_status=%s;
+        UPDATE jobs_job SET {updates} WHERE channel='{channel}' and channel_id='{channel_id}' and session_status='{session_status}';
         """
+
+        print(query)
 
         try:
             cursor.execute(query, values)

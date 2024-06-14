@@ -32,14 +32,15 @@
 		}
 
 		.sender-message {
-			background-color: #84a0de;
+			background-color: #5987ed;
 			color: #fff;
 			align-self: flex-start;
 		}
 
 		.receiver-message {
-			background-color: #84a0de;
+			background-color: #43e868;
 			color: #fff;
+			min-width: 20%;
 			align-self: flex-end;
 		}
 
@@ -150,7 +151,25 @@
                             display: inline-block;
                             margin-right: 10px;
         }
+table {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 90%;
+  margin: 5%;
+  border-color: #007BFF;
+  table-layout: fixed;
 
+}
+
+td, th {
+  border: 1px solid #007BFF;
+  text-align: left;
+  padding: 8px;
+}
+
+tr {
+  background-color: #dddddd;
+}
 	</style>
 <section class="text-gray-700 body-font">
     <div class="connection-status">
@@ -170,9 +189,9 @@
                 <button id="reset-button" class="fa fa-refresh" ></button>
 
             </div>
-            <div class="button-container" id="button-container" style="display: none">
-                <button id="yes">YES</button>
-                <button id="no">NO</button>
+            <div class="button-container" id="button-container" style="display: none"> </div>
+            <div class="button-container" id="validator-button" style="display: none">
+                <button id="data_validator_submit">SUBMIT</button>
                  <button id="reset-button1" class="fa fa-refresh" ></button>
             </div>
             <form id="upload-form" style="display: none">
@@ -205,18 +224,7 @@
             chatSocket.onmessage = function (e) {
                 const data = JSON.parse(e.data);
                 SetBotResponse(data)
-                var chatbotContainer = document.getElementById('chat');
-                var content = `<div class="message sender-message">
-                <img src= "https://m.economictimes.com/thumb/msid-77525190,width-1200,height-900,resizemode-4,imgsize-112483/tax.jpg"
-                    alt="Sender Avatar"
-                    class="avatar">` + data.message + `</div>`
-
-                var newContent = createElementFromHTML(content);
-                chatbotContainer.appendChild(newContent);
-                localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
                 scrollSmoothlyToBottom(id = "chat")
-
-
             };
             chatSocket.onclose = function (e) {
                 console.error('Chat socket closed unexpectedly');
@@ -244,13 +252,8 @@
                 messageInputDom.value = '';
 
             };
-            document.querySelector('#yes').onclick = function (e) {
-                var message = "YES"
-                SetUserInput(message)
-
-            };
-            document.querySelector('#no').onclick = function (e) {
-                var message = "No"
+            document.querySelector('#data_validator_submit').onclick = function (e) {
+                var message = "Submited"
                 SetUserInput(message)
             };
             document.querySelector('#reset-button').onclick = function (e) {
@@ -277,71 +280,18 @@
                 SetUserInput('reset');
 
             };
+
             var fileInput = document.getElementById('upload-form')
             fileInput.addEventListener('change', function () {
-                var chatbotContainer = document.getElementById('chat');
                 var file_input = document.getElementById('fileInput')
                 var file = file_input.files[0];
                 if (file) {
                     var fileType = file.type;
                     if (fileType !== 'application/pdf') {
-                        var content = `<div class="message receiver-message">
-                                        <img src= "https://banner2.cleanpng.com/20180816/syp/kisspng-computer-icons-favicon-user-iconfinder-personal-we-yue-jia-fresh-my-user-icon-svg-png-icon-free-downl-5b7590572d9999.5378872315344313191868.jpg"
-                                             alt="Receiver Avatar"
-                                             class="avatar"> Invalid file type, kindly upload a pdf P9 - We currently don't support images.</div>`
+                         SetBotResponse(data={"keyboard_type":"upload_pdf"},is_invalid_file_input=true)
                     } else {
-                        var content = `<div class="message receiver-message">
-                                        <img src= "https://banner2.cleanpng.com/20180816/syp/kisspng-computer-icons-favicon-user-iconfinder-personal-we-yue-jia-fresh-my-user-icon-svg-png-icon-free-downl-5b7590572d9999.5378872315344313191868.jpg"
-                                             alt="Receiver Avatar"
-                                             class="avatar">
-                                        <img src= "https://png.pngtree.com/png-clipart/20220612/original/pngtree-pdf-file-icon-png-png-image_7965915.png"
-                                            alt="pdf"
-                                            width="70" height="80">
-                                        </div>`
-                        var newContent = createElementFromHTML(content);
-                        // Append the new content to the chatbot container
-                        chatbotContainer.appendChild(newContent);
-                        // Save the current state of the chatbot container to local storage
-                        localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
-
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        formData.append('message', ''); // Add any additional data if needed
-
-                        fetch('/jobs/conversation/file_upload', {
-                            method: 'POST',
-                            body: formData,
-                            credentials: 'same-origin',
-                            headers: {
-                                'X-CSRFToken': getCookie('csrftoken')
-                            }
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.message !== "-") {
-                                    // Define the content to be added
-                                    var content = `<div class="message sender-message">
-                                                        <img src= "https://m.economictimes.com/thumb/msid-77525190,width-1200,height-900,resizemode-4,imgsize-112483/tax.jpg"
-                                                            alt="Sender Avatar"
-                                                            class="avatar">` + data.message + `</div>`
-
-                                    var newContent = createElementFromHTML(content);
-                                    // Append the new content to the chatbot container
-                                    chatbotContainer.appendChild(newContent);
-
-                                    // Save the current state of the chatbot container to local storage
-                                    localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
-
-                                    SetBotResponse({})
-
-
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                            });
+                        SetUserInput(message=file,is_file=true)
                     }
-
 
                 }
                 scrollSmoothlyToBottom(id = "chat")
@@ -391,31 +341,87 @@
             initializeWebSocket();
         }
 
-        function SetBotResponse(data){
+        function SetBotResponse(data,is_invalid_file_input=false){
+
            var chatbotContainer = document.getElementById('chat');
            var input_box = document.getElementById('input-box');
            var button_container = document.getElementById('button-container');
            var upload_form = document.getElementById('upload-form');
+           var data_validator_container = document.getElementById('validator-button');
+           var content;
 
-            if(data.action === "START" ){
+           if(data.action === "START" ){
                     localStorage.setItem('chatbotContent', ``);
                     chatbotContainer.innerHTML="";
                 }
-            if (data.keyboard_type=="options") {
+           if (is_invalid_file_input){
+               content = `<div class="message receiver-message">Invalid file type, kindly upload a pdf P9 - We currently don't support images.</div>`
+           }
+           else{
+               content = `<div class="message sender-message">` + data.message + `</div>`
+           }
+
+           var newContent = createElementFromHTML(content);
+           chatbotContainer.appendChild(newContent);
+
+           if( data.data && data.keyboard_type=='data_validator'){
+
+                let table_rows = ``;
+                for(let i=0;i<data.data.length;i++){
+                    if (data.data[i].position === "end"){
+                        var table = `<table><tbody>`+table_rows+`</tbody></table>`;
+                        table_rows = ``;
+                    }
+                    else{
+                        table_rows +=`<tr> <td>`+data.data[i].key+`</td> <td> <input type="text" value=`+data.data[i].value+`></td> </tr>`;
+                    }
+                }
+
+               newContent = createElementFromHTML(table);
+               chatbotContainer.appendChild(newContent);
+
+
+
+           }
+
+           localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
+
+
+
+           if (data.keyboard_type=="options") {
+
+                    let buttons = ``;
+
+                    for(let i=0;i<data.data.length;i++){
+                        buttons += `<button class="optionsButton" value=`+data.data[i].value+`>`+data.data[i].key+`</button>`
+                    }
+                    buttons += `<button id="reset-button1" class="fa fa-refresh" ></button>`
+
+                    button_container.innerHTML = buttons
 
                     input_box.style.display = "none"
                     upload_form.style.display = "none"
                     button_container.style.display = "flex"
+                    data_validator_container.style.display = "none"
 
+                    let options_buttons = document.getElementsByClassName("optionsButton");
+                    for (var i = 0; i < options_buttons.length; i++) {
+                        options_buttons[i].addEventListener("click", function() {
+                          SetUserInput(this.value)
+
+                        });
+                      }
                 }
-            else if (data.keyboard_type=="upload_pdf") {
+           else if (data.keyboard_type=="upload_pdf") {
 
                     input_box.style.display = "none"
                     upload_form.style.display = "flex"
                     button_container.style.display = "none"
+                    data_validator_container.style.display = "none"
+
 
                 }
-            else if (data.keyboard_type=="validate") {
+           else if (data.keyboard_type=="validate") {
 
                     var continue_button = document.getElementById('yes');
                     var cancel_button = document.getElementById('no');
@@ -424,36 +430,60 @@
                     cancel_button.innerText = "CANCEL"
 
 
-
+                    data_validator_container.style.display = "none"
                     input_box.style.display = "none"
                     upload_form.style.display = "none"
                     button_container.style.display = "flex"
                 }
-            else {
+           else if (data.keyboard_type=='data_validator'){
+                    input_box.style.display = "none"
+                    upload_form.style.display = "none"
+                    button_container.style.display = "none"
+                    data_validator_container.style.display = "flex"
+
+            }
+           else {
                     input_box.style.display = "flex"
                     upload_form.style.display = "none"
                     button_container.style.display = "none"
+                    data_validator_container.style.display = "none"
+
                 }
 
-
-            var chat_container_input = document.getElementById('chat_container_input');
-            localStorage.setItem('ChatContainerInput', chat_container_input.innerHTML);
+           var chat_container_input = document.getElementById('chat_container_input');
+           localStorage.setItem('ChatContainerInput', chat_container_input.innerHTML);
 
         }
 
-        function SetUserInput(message) {
+        function SetUserInput(message,is_file=false) {
             var chatbotContainer = document.getElementById('chat');
-            var content = `<div class="message receiver-message">
-                    <img src= "https://banner2.cleanpng.com/20180816/syp/kisspng-computer-icons-favicon-user-iconfinder-personal-we-yue-jia-fresh-my-user-icon-svg-png-icon-free-downl-5b7590572d9999.5378872315344313191868.jpg"
-                         alt="Receiver Avatar"
-                         class="avatar">`+ message +`</div>`
+            var content;
+            if (is_file) {
+                content = `<div class="message receiver-message"><img src= "https://png.pngtree.com/png-clipart/20220612/original/pngtree-pdf-file-icon-png-png-image_7965915.png"
+                                            alt="pdf"
+                                            width="70" height="80">
+                                        </div>`
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const arrayBuffer = event.target.result;
+                    chatSocket.send(arrayBuffer);
+                    console.log('File sent:', message.name);
+                };
+                reader.onerror = (error) => {
+                    console.error('File reading error:', error);
+                };
+                reader.readAsArrayBuffer(message);
+            }
+            else{
+                 content = `<div class="message receiver-message">`+ message +`</div>`
+                 chatSocket.send(JSON.stringify({ 'message': message  }));
+            }
 
             var newContent = createElementFromHTML(content);
             chatbotContainer.appendChild(newContent);
             localStorage.setItem('chatbotContent', chatbotContainer.innerHTML);
             scrollSmoothlyToBottom(id="chat")
 
-            chatSocket.send(JSON.stringify({ 'message': message  }));
         }
 
         function getCookie(name) {

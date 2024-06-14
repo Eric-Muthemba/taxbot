@@ -3,8 +3,8 @@ from django.urls import path
 from .views import (
     LeadListView, LeadDetailView, LeadCreateView, LeadUpdateView, LeadDeleteView,
     AssignAgentView, CategoryListView, CategoryDetailView, LeadCategoryUpdateView,
-    CategoryCreateView, CategoryUpdateView, CategoryDeleteView, LeadJsonView, 
-    FollowUpCreateView, FollowUpUpdateView, FollowUpDeleteView,ConversationFileUploadView,ConversationView
+    CategoryCreateView, CategoryUpdateView, CategoryDeleteView, LeadJsonView, MpesaCallback,
+    FollowUpCreateView, FollowUpUpdateView, FollowUpDeleteView
 )
 
 app_name = "jobs"
@@ -26,9 +26,6 @@ urlpatterns = [
     path('categories/<int:pk>/update/', CategoryUpdateView.as_view(), name='category-update'),
     path('categories/<int:pk>/delete/', CategoryDeleteView.as_view(), name='category-delete'),
     path('create-category/', CategoryCreateView.as_view(), name='category-create'),
-    path('conversation/file_upload', ConversationFileUploadView.as_view(), name='conversation-file-upload'),
-    path('conversation/api/', ConversationView.as_view(), name='conversation'),
-
-
+    path('qwertyuiop/mpesa_callback', MpesaCallback.as_view(), name='mpesa'),
 
 ]

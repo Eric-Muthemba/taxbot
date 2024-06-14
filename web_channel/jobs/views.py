@@ -106,42 +106,19 @@ class ChatbotPageView(generic.TemplateView):
             return super().dispatch(request, *args, **kwargs)
 
 
-class ConversationView(generics.CreateAPIView):
+class MpesaCallback(generics.CreateAPIView):
     serializer_class = ConversationSerializer
     def create(self, request, *args, **kwargs):
         data = request.data
-        response = state_machine(channel_id=data['channel_id'],channel=data['channel'],message=data['message'])
-        return JsonResponse(response)
 
-class ConversationFileUploadView(generics.CreateAPIView):
-    queryset = Job.objects.all()
-    parser_classes = (MultiPartParser, FormParser)  # Add parsers to handle file uploads
+        if data["Body"]["stkCallback"]["ResultCode"] == 0:
+            reference = data["Body"]["stkCallback"]["ExternalReference"]
+            amount_paid = data["Body"]["stkCallback"]["Amount"]
+            mpesa_reference = [data_point["Value"] for data_point in data["Body"]["stkCallback"]["CallbackMetadata"]["Item"] if data_point["Name"]== "MpesaReceiptNumber"][0]
+            jobs = Job.objects.filter(uuid=reference)
+            jobs.update(mpesa_paid_amount=amount_paid,mpesa_reference=mpesa_reference)
 
-    def create(self, request, *args, **kwargs):
-        channel_id = request.COOKIES.get('channel_id')
-        file = request.FILES.get('file')
-
-        # Check if the request contains a file
-
-        jobs = Job.objects.filter(channel="Web",channel_id=channel_id,session_status="Active")
-        if not jobs:
-            return JsonResponse({"Error":"no process detected from our computer"})
-
-        if file != None and jobs[0].step == "GENERATING_TAX_DOCUMENT":
-            response = { "message": "Processing ..." }
-
-            # Save the file using FileSystemStorage
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, f'uploads/{channel_id}'))
-            fs.save(file.name, file)
-
-            publish_notification({'operation':"p9_form",
-                                  'channel':'web',
-                                  'channel_id': channel_id,
-                                  "path":os.path.join(settings.MEDIA_ROOT, f'uploads/{channel_id}/{file.name}')})
-
-            return JsonResponse(response)
-        else :
-            return JsonResponse({"Error":"no process detected from our computer"})
+        return JsonResponse({})
 
 
 class LeadListView(LoginRequiredMixin, generic.ListView):

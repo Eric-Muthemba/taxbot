@@ -17,3 +17,5 @@ channels
 channels-redis
 django-celery-results
 kombu
+django-jsonfield
+requests
