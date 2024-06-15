@@ -19,7 +19,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if channel_id is not None:
             self.room_name = channel_id
-            self.room_group_name = 'chat_%s' % channel_id
+            self.room_group_name = (f'chat_{channel_id}')
             # Join room group
             await self.channel_layer.group_add(self.room_group_name, self.channel_name)
 
@@ -40,6 +40,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             text_data_json = json.loads(text_data)
             message = text_data_json['message']
         await self.channel_layer.group_send(self.room_group_name, {'type': 'chat_message', 'message': message })
+
 
     async def chat_message(self, event):
         message = event['message']

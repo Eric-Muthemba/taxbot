@@ -39,10 +39,12 @@ class MyConsumerStep(bootsteps.ConsumerStep):
     def handle_message(self, body, message):
         channel_layer = get_channel_layer()
         print('Received message: {0!r}'.format(body))
-        body = json.loads(body)
         try:
-            room_group_name = 'chat_%s' % body['channel_id']
+            body = json.loads(body)
+            room_group_name = f"chat_{body['channel_id']}"
+            print(room_group_name)
             async_to_sync(channel_layer.group_send)(room_group_name, {"type": "chat_message", "message": body["message"]})
+
         except Exception as e:
             print("error",e)
         message.ack()

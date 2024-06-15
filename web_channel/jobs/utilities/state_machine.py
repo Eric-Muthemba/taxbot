@@ -25,7 +25,7 @@ def initiate_stkpush(amount,msisdn,account_no):
 
 
 def state_machine(channel,message,channel_id):
-
+    print(channel_id)
 
     if message == "":
         return { "message": "Invalid input."}
@@ -33,7 +33,6 @@ def state_machine(channel,message,channel_id):
     jobs = Job.objects.filter(channel=channel, channel_id=channel_id, session_status="Active")
 
     print(jobs[0].step)
-    print(message)
     if channel == "Web":
         if not jobs:
             return {"message": "No active job found"}
@@ -176,9 +175,10 @@ def state_machine(channel,message,channel_id):
                               "path":file_path})
         response = { "message": "Processing ..." }
         jobs.update(screenshot_path=screenshot_path,step="VALIDATE_EXTRACTED_INFO")
-    elif jobs[0].step == "VALIDATE_EXTRACTED_INFO":
+    elif jobs[0].step == "VALIDATE_EXTRACTED_INFO" and type(message).__name__ != "bytes":
         tax_document_extracted_info = json.loads(jobs[0].tax_document_extracted_info)
-        print(tax_document_extracted_info)
+        print(message)
+        #print(tax_document_extracted_info)
         response = {
             "keyboard_type": "data_validator",
             "message": "Kindly confirm if the following extracted information is correct",
@@ -215,16 +215,49 @@ def state_machine(channel,message,channel_id):
             ]
         }
         jobs.update(step="CHOOSE_SERVICE")
-    elif jobs[0].step == "CHOOSE_SERVICE":
+    elif jobs[0].step == "CHOOSE_SERVICE" and type(message).__name__ != "bytes":
+        print(type(message))
+        tax_document_extracted_info = json.loads(jobs[0].tax_document_extracted_info)
+
+
+        tax_document_extracted_info['standard_data']['employers_name'] = message["0"]
+        tax_document_extracted_info['standard_data']['employers_pin'] = message["1"]
+        tax_document_extracted_info['data'][0]['A'] = message["2"]
+        tax_document_extracted_info['data'][1]['A'] = message["3"]
+        tax_document_extracted_info['data'][2]['A'] = message["4"]
+        tax_document_extracted_info['data'][3]['A'] = message["5"]
+        tax_document_extracted_info['data'][4]['A'] = message["6"]
+        tax_document_extracted_info['data'][5]['A'] = message["7"]
+        tax_document_extracted_info['data'][6]['A'] = message["8"]
+        tax_document_extracted_info['data'][7]['A'] = message["9"]
+        tax_document_extracted_info['data'][8]['A'] = message["10"]
+        tax_document_extracted_info['data'][9]['A'] = message["11"]
+        tax_document_extracted_info['data'][10]['A'] = message["12"]
+        tax_document_extracted_info['data'][11]['A'] = message["13"]
+        tax_document_extracted_info['totals']['totals_A'] = message["14"]
+        tax_document_extracted_info['totals']['totals_B'] = message["15"]
+        tax_document_extracted_info['totals']['totals_C'] = message["16"]
+        tax_document_extracted_info['totals']['totals_D'] = message["17"]
+        tax_document_extracted_info['totals']['totals_E1'] = message["18"]
+        tax_document_extracted_info['totals']['totals_E2'] = message["19"]
+        tax_document_extracted_info['totals']['totals_E3'] = message["20"]
+        tax_document_extracted_info['totals']['totals_F'] = message["21"]
+        tax_document_extracted_info['totals']['totals_G'] = message["22"]
+        tax_document_extracted_info['totals']['totals_H'] = message["23"]
+        tax_document_extracted_info['totals']['totals_J'] = message["24"]
+        tax_document_extracted_info['totals']['totals_personal_relief_K'] = message["25"]
+        tax_document_extracted_info['totals']['totals_insurance_relief-K'] = message["26"]
+        tax_document_extracted_info['totals']['totals_L'] = message["27"]
+
         response = {
-            "message": "Select the services you want",
-            "keyboard_type": "options",
-            "data":[
-                    {"key": "Generate filed tax return documents Excel + XML (final document to upload to itax portal)","value":1},
-                    {"key": "Auto file your tax on the itax portal (includes 1)", "value": 2}
-            ]
-        }
-        jobs.update( step="CHECK_SERVICE_CHOOSEN")
+                "message": "Select the services you want",
+                "keyboard_type": "options",
+                "data":[
+                        {"key": "Generate filed tax return documents Excel + XML (final document to upload to itax portal)","value":1},
+                        {"key": "Auto file your tax on the itax portal (includes 1)", "value": 2}
+                ]
+            }
+        jobs.update( step="CHECK_SERVICE_CHOOSEN",tax_document_extracted_info=tax_document_extracted_info)
     elif jobs[0].step == "CHECK_SERVICE_CHOOSEN":
             response = {"message": "To continue, Enter your phone number to pay KES 200.00"}
             jobs.update( output_option=message,step="REQUEST_PAYMENT")

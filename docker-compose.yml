@@ -9,7 +9,7 @@ services:
     volumes:
       - ./web_channel/:/app
     ports:
-      - "80"
+      - "8087:80"
     depends_on:
       - TaxBotKEDB
       - TaxBotKERedis

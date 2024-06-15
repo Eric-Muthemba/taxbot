@@ -5,21 +5,27 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
 <style>
-		.chat-container {
-			max-width: 600px;
-			margin: 50px auto;
-			background-color: #fff;
-			border-radius: 8px;
-			overflow: hidden;
-			box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
-		}
+.chat-container {
+    width: 100%; /* Full width */
+    height: 80vh; /* Full viewport height */
+    max-width: 600px; /* Limit maximum width */
+    margin: 0 auto; /* Center horizontally */
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
+}
 
-		.message-container {
-			display: flex;
-			flex-direction: column;
-            overflow: scroll;
-            max-height: 450px;
-		}
+/* Adjustments for message-container and other elements as needed */
+.message-container {
+	display: flex;
+    flex-direction: column;
+    overflow: scroll;
+    max-height: calc(100% - 100px); /* Adjust as needed */
+}
+
+
+
 
 		.message {
 			padding: 10px;
@@ -247,14 +253,22 @@ tr {
             document.querySelector('#send-button').onclick = function (e) {
                 const messageInputDom = document.querySelector('#chat-input');
                 const message = messageInputDom.value;
-
                 SetUserInput(message)
                 messageInputDom.value = '';
 
             };
             document.querySelector('#data_validator_submit').onclick = function (e) {
                 var message = "Submited"
-                SetUserInput(message)
+
+                var table = document.getElementById('table');
+                let table_data = {}
+                let cell;
+                for (var r = 0; r < table.rows.length; r++) {
+                   cell = document.getElementById('table_cell_'+r.toString());
+                    table_data[r.toString()] = cell.value
+                }
+
+                SetUserInput(table_data,is_file=false,display_message=message)
             };
             document.querySelector('#reset-button').onclick = function (e) {
                 //delete channel from cookie
@@ -262,7 +276,7 @@ tr {
                 //refresh
 
                 SetUserInput('reset');
-            
+
             };
             document.querySelector('#reset-button1').onclick = function (e) {
                 //delete channel from cookie
@@ -369,11 +383,11 @@ tr {
                 let table_rows = ``;
                 for(let i=0;i<data.data.length;i++){
                     if (data.data[i].position === "end"){
-                        var table = `<table><tbody>`+table_rows+`</tbody></table>`;
+                        var table = `<table id="table"><tbody>`+table_rows+`</tbody></table>`;
                         table_rows = ``;
                     }
                     else{
-                        table_rows +=`<tr> <td>`+data.data[i].key+`</td> <td> <input type="text" value=`+data.data[i].value+`></td> </tr>`;
+                        table_rows +=`<tr> <td>`+data.data[i].key+`</td> <td> <input type="text" id="table_cell_`+i+`" value=`+data.data[i].value+`></td> </tr>`;
                     }
                 }
 
@@ -407,7 +421,7 @@ tr {
                     let options_buttons = document.getElementsByClassName("optionsButton");
                     for (var i = 0; i < options_buttons.length; i++) {
                         options_buttons[i].addEventListener("click", function() {
-                          SetUserInput(this.value)
+                          SetUserInput(this.value,is_file=false,display_message=this.innerText)
 
                         });
                       }
@@ -455,7 +469,7 @@ tr {
 
         }
 
-        function SetUserInput(message,is_file=false) {
+        function SetUserInput(message,is_file=false,display_message=null) {
             var chatbotContainer = document.getElementById('chat');
             var content;
             if (is_file) {
@@ -475,7 +489,12 @@ tr {
                 reader.readAsArrayBuffer(message);
             }
             else{
-                 content = `<div class="message receiver-message">`+ message +`</div>`
+                 if (display_message === null) {
+                     content = `<div class="message receiver-message">` + message + `</div>`
+                 }
+                 else{
+                     content = `<div class="message receiver-message">` + display_message + `</div>`
+                 }
                  chatSocket.send(JSON.stringify({ 'message': message  }));
             }
 
