@@ -2,14 +2,29 @@
 from openpyxl import load_workbook
 import os
 from database import database
+import configparser
+import win32com
+import win32com.client 
 
 db = database()
 
 
 class Excel():
-    def __init__(self, saving_name,P9_data=None):
-        self.template_file_path = os.getenv('BASE_PATH')+os.getenv("TEMPLATE_FILE")
-        self.saving_path =  os.getenv('BASE_PATH')+os.getenv("GENERATED_DOCUMENT_FOLDER") + f'{saving_name}.xlsm'
+    
+    def _get_parameters(self,channel_id):
+        # definition of the object used to read the config file
+        configfile = configparser.ConfigParser()
+        configfile.read("./config.ini")
+
+        params = configfile["system"]
+        self.BASE_PATH = params["BASE_PATH"]
+        self.TEMPLATE_FILE = params["TEMPLATE_FILE"]
+        self.GENERATED_DOCUMENT_FOLDER = params["GENERATED_DOCUMENT_FOLDER"].replace("channel_id",channel_id)
+        
+    def __init__(self, saving_name,P9_data=None,channel_id=None):
+        self._get_parameters(channel_id)
+        self.template_file_path = self.BASE_PATH+self.TEMPLATE_FILE
+        self.saving_path =  self.BASE_PATH+self.GENERATED_DOCUMENT_FOLDER + f'{saving_name}.xlsm'
         self.channel_id = saving_name
         self.P9_data = P9_data
 

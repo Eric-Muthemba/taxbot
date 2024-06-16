@@ -6,9 +6,7 @@ env = environ.Env(
     DEBUG=(bool, False)
 )
 
-READ_DOT_ENV_FILE = env.bool('READ_DOT_ENV_FILE', default=False)
-if READ_DOT_ENV_FILE:
-    environ.Env.read_env()
+environ.Env.read_env()
 
 DEBUG = env('DEBUG')
 SECRET_KEY = env('SECRET_KEY')
@@ -90,7 +88,7 @@ DATABASES = {
     }
 }
 os.environ["DJANGO_ALLOW_ASYNC_UNSAFE"] = "true"
-
+'''
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels.layers.InMemoryChannelLayer',
@@ -104,7 +102,7 @@ CHANNEL_LAYERS = {
             "hosts": [os.environ['REDIS_URL']],
         },
     },
-}'''
+}
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
@@ -203,5 +201,5 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Celery properties
-CELERY_BROKER_URL = 'amqp://admin:admin@rabbit:5672//'
+CELERY_BROKER_URL = 'amqp://guest:guest@127.0.0.1:5672//'
 CELERY_RESULT_BACKEND = 'django-db'

@@ -95,7 +95,7 @@
 
         }
         .button-container button {
-            padding: 10px 20px;
+            padding: 10px 10px;
             border: none;
             border-radius: 10px; /* Makes buttons rounded */
             background-color: #007BFF; /* Button background color */
@@ -111,12 +111,11 @@
         }
         input[type="file"] {
             display: block;
-            margin: 20px auto;
+            margin: 10px;
             padding: 10px;
             border: 2px dashed #ccc;
             border-radius: 4px;
             width: 100%;
-            max-width: 400px;
             cursor: pointer;
             transition: border-color 0.3s;
         }
@@ -124,8 +123,9 @@
             border-color: #666;
         }
         button {
-            padding: 10px 20px;
+            padding: 10px 10px;
             background-color: #007BFF;
+            line-height: normal;
             color: #fff;
             border: none;
             border-radius: 4px;
@@ -200,10 +200,11 @@ tr {
                 <button id="data_validator_submit">SUBMIT</button>
                  <button id="reset-button1" class="fa fa-refresh" ></button>
             </div>
-            <form id="upload-form" style="display: none">
-            <input type="file" id="fileInput" accept="application/pdf">
+            <div id="upload-form" style="display: none">
+                <input type="file" id="fileInput" accept="application/pdf">
+                <button id="upload-file">Upload file</button>
              <button id="reset-button2" class="fa fa-refresh" ></button>
-        </form>
+            </div>
         </div>
 
 
@@ -231,6 +232,8 @@ tr {
                 const data = JSON.parse(e.data);
                 SetBotResponse(data)
                 scrollSmoothlyToBottom(id = "chat")
+                chatSocket.send(JSON.stringify({"acknowledged":true,"message_id":data.message_id}))
+
             };
             chatSocket.onclose = function (e) {
                 console.error('Chat socket closed unexpectedly');
@@ -295,8 +298,8 @@ tr {
 
             };
 
-            var fileInput = document.getElementById('upload-form')
-            fileInput.addEventListener('change', function () {
+            var fileInput = document.getElementById('upload-file')
+            fileInput.onclick = function () {
                 var file_input = document.getElementById('fileInput')
                 var file = file_input.files[0];
                 if (file) {
@@ -310,7 +313,7 @@ tr {
                 }
                 scrollSmoothlyToBottom(id = "chat")
 
-            });
+            };
         }
 
         function attemptReconnect() {
@@ -367,6 +370,11 @@ tr {
            if(data.action === "START" ){
                     localStorage.setItem('chatbotContent', ``);
                     chatbotContainer.innerHTML="";
+                    if (data.cookie){
+                            setChannelIdCookie(channelId=data.cookie);
+                            chatSocket.close();
+                            
+                    }
                 }
            if (is_invalid_file_input){
                content = `<div class="message receiver-message">Invalid file type, kindly upload a pdf P9 - We currently don't support images.</div>`
@@ -505,7 +513,19 @@ tr {
 
         }
 
-        function getCookie(name) {
+        function setChannelIdCookie(channelId) {
+            expirationDays = 365;
+            // Calculate expiration date
+            const d = new Date();
+            d.setTime(d.getTime() + (expirationDays * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + d.toUTCString();
+
+            // Set the cookie
+            document.cookie = `channel_id=${channelId}; ${expires}; path=/`;
+        }
+
+
+        function setCookie(cookie) {
                     let cookieValue = null;
                     if (document.cookie && document.cookie !== '') {
                         const cookies = document.cookie.split(';');

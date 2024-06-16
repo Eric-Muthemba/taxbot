@@ -33,7 +33,8 @@ class Itax(object):
         self.tax_return_period_from_xpath = "//*[@id=\"txtPeriodFrom\"]"
         self.tax_return_period_to_xpath = "//*[@id=\"txtPeriodTo\"]"
         self.upload_tax_return_input_xpath = "//*[@id=\"file\"]"
-
+        self.invalid_credentials_xpath = "/html/body/div[3]/div[3]/table/tbody/tr/td/div/form/table/tbody/tr[1]/td[1]/table/tbody/tr[3]/td/div[3]/table[1]/tbody/tr/td/font"
+        self.wrong_password = False
         self.captcha_file = "image.png"
         self.screenshot_path = screenshot_path
         self.itax_pin = itax_pin
@@ -55,13 +56,14 @@ class Itax(object):
             self.load_itax_website()
             self.login_to_itax_website()
 
-            if file_nil:
-                self.navigate_to_file_nil_tax_page()
-            else:
-                self.navigate_to_filing_tax_page()
-                self.upload_and_submit_tax_returns()
+            if not self.wrong_password:
+                if file_nil:
+                    self.navigate_to_file_nil_tax_page()
+                else:
+                    self.navigate_to_filing_tax_page()
+                    self.upload_and_submit_tax_returns()
 
-            self.take_screenshot()
+                self.take_screenshot()
 
         except Exception as e:
             self.driver.close()
@@ -148,6 +150,15 @@ class Itax(object):
         login_button = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.login_button_xpath)))
         login_button.click()
 
+
+        sleep(10)
+
+        elements = self.driver.find_elements_by_xpath(self.invalid_credentials_xpath)
+
+        if len(elements) > 0:
+            self.wrong_password = True
+
+        
     def navigate_to_file_nil_tax_page(self):
         main_returns_page_button = self.wait.until(
             EC.visibility_of_element_located((By.XPATH, self.main_returns_page_button_xpath)))

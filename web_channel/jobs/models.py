@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django_extensions.db.fields import ShortUUIDField
 import shortuuid
 import jsonfield
+from uuid import uuid4
 class User(AbstractUser):
     is_organisor = models.BooleanField(default=True)
     is_agent = models.BooleanField(default=False)
@@ -36,7 +37,7 @@ class Job(models.Model):
     SESSION_STATUS = [("Active", "Active"),("Inactive", "Inactive")]
     uuid = ShortUUIDField(default=get_uuid,unique=True)
     channel = models.CharField(choices=CHANNELS,max_length=20)
-    channel_id = models.CharField(max_length=255)
+    channel_id = models.UUIDField(default=uuid4)
     session_status = models.CharField(choices=SESSION_STATUS,max_length=20)
     year_of_filling = models.IntegerField(null=True)
     full_name = models.CharField(max_length=20,null=True)

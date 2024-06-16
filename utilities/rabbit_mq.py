@@ -1,10 +1,10 @@
 import time
-
+import argparse
 import pika
 import json
 from datetime import datetime
-#from selenium_bot import Itax
-#from excel import Excel
+from selenium_bot import Itax
+from excel import Excel
 from mpesa import Mpesa
 from pdf_extractor import pdf_extractor
 import os
@@ -13,8 +13,9 @@ from database import database
 
 database = database()
 class rabbitMQ():
+    
     def __init__(self,queue):
-        credentials = pika.PlainCredentials("admin", "admin")
+        credentials = pika.PlainCredentials("guest", "guest")
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='127.0.0.1', port="5672", credentials=credentials))
         self.queue = queue
         self.exchange = 'myexchange'
@@ -48,36 +49,39 @@ class rabbitMQ():
                                 "message": "Finished data extraction.<br>Generating tax document ..."})
 
             elif self.queue == "excel_filing":
-                db_instance = database.read(channel_id=data["channel_id"])
-                P9_data = db_instance[17]
-                xl = Excel(saving_name=data["channel_id"],P9_data=P9_data)
+                db_instance = database.read(channel_id=data["channel_id"])            
+                P9_data = db_instance[0][16]
+
+                xl = Excel(saving_name=data["channel_id"],P9_data=P9_data,channel_id=data["channel_id"])
                 xl.update_cells()
-                xl.generate_upload_file()
                 tax_refund = xl.get_tax_refund_value()
-                self.publisher({"channel_id": data["channel_id"],
-                                "message": f"Your tax refund is KSh. {tax_refund} ."})
+                if data['operation']=="excel_filing_get_tax_refund":
+                    self.publisher({"channel_id": data["channel_id"],
+                                    "message": f"Your tax refund is KSh. {tax_refund}"})
+            
+                elif data['operation'] in ["excel_filing","excel_filing_and_file_tax_on_itax"]:
+                    xl.generate_upload_file()
+                    self.publisher({"channel_id": data["channel_id"],
+                                    "message": f"Here is your generated documents"})
+                    
+                if data['operation']== "excel_filing_and_file_tax_on_itax":
+                    screenshot_path = db_instance[8].replace("/app/",f"{os.getenv("BASE_PATH")}/web_channel/")
+                    print(db_instance)
+                    '''itax = Itax(file_nil=False,
+                                    itax_pin=data["channel_id"],
+                                    itax_password=data["channel_id"],
+                                    doc_to_be_uploaded=xl.saving_path,
+                                    screenshot_path= screenshot_path)
+                    
+                    if itax.wrong_password:
+                        self.publisher({"channel_id": data["channel_id"],
+                                        "message": f"Wrong password. kindly restart and use correct credentials"})
+                    else:'''
+                    self.publisher({"channel_id": data["channel_id"],
+                                        "message": f"{screenshot_path}"})
 
-            elif self.queue == "excel_filing_and_file_tax_on_itax":
-                db_instance = database.read(channel_id=data["channel_id"])
-                P9_data = db_instance[17]
-                xl = Excel(saving_name=data["channel_id"], P9_data=P9_data)
-                xl.update_cells()
-                xl.generate_upload_file()
-                tax_refund = xl.get_tax_refund_value()
-                self.publisher({"channel_id": data["channel_id"],
-                                "message": f"Your tax refund is KSh. {tax_refund} ."})
-
-                screenshot_path = db_instance[8].replace("/app/",f"{os.getenv("BASE_PATH")}/web_channel/")
-
-                Itax(file_nil=False,
-                     itax_pin=data["channel_id"],
-                     itax_password=data["channel_id"],
-                     doc_to_be_uploaded=xl.saving_path,
-                     screenshot_path= screenshot_path)
-
-                self.publisher({"channel_id": data["channel_id"],
-                                "message": f"{screenshot_path}"})
-
+            
+                
             print(datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ' Processed !')
 
 
@@ -87,5 +91,13 @@ class rabbitMQ():
         print(' [*] Waiting for messages. To exit press CTRL+C')
         channel.start_consuming()
 
-rabbit = rabbitMQ("p9_upload")
+
+parser = argparse.ArgumentParser(description='start rabbitmq consumer')
+# Add arguments
+parser.add_argument('queue', metavar='N', type=str, nargs='+', help='queue')
+# Parse the arguments
+args = parser.parse_args()
+queue = args.queue[0]
+
+rabbit = rabbitMQ(queue)
 rabbit.consumer()

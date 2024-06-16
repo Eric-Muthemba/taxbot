@@ -94,12 +94,11 @@ class ChatbotPageView(generic.TemplateView):
     def dispatch(self, request, *args, **kwargs):
         # Check if the 'client_id' cookie is set
         if 'channel_id' not in request.COOKIES:
-            # Generate a unique identifier for the client
-            channel_id = str(uuid.uuid4())
             # Get the response object from the parent dispatch method
             response = super().dispatch(request, *args, **kwargs)
             # Set the cookie in the response
-            Job.objects.create(channel="Web", channel_id=channel_id, session_status="Active")
+            job = Job.objects.create(channel="Web",session_status="Active")
+            channel_id=job.channel_id
             response.set_cookie('channel_id', channel_id, max_age=365 * 24 * 60 * 60)  # Cookie valid for 1 year
             return response
         else:
