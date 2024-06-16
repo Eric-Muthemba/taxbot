@@ -17,6 +17,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', LandingPageView.as_view(), name='landing-page'),
     path('chatbot/', ChatbotPageView.as_view(), name='chatbot'),
+    path('chatbot/2', Chatbot2PageView.as_view(), name='chatbot2'),
 
     path('dashboard/', DashboardView.as_view(), name='dashboard'),
     path('jobs/',  include('jobs.urls', namespace="jobs")),
