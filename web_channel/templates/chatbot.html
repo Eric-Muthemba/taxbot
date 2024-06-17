@@ -232,7 +232,7 @@ tr {
                 const data = JSON.parse(e.data);
                 SetBotResponse(data)
                 scrollSmoothlyToBottom(id = "chat")
-                chatSocket.send(JSON.stringify({"acknowledged":true,"message_id":data.message_id}))
+                //chatSocket.send(JSON.stringify({"acknowledged":true,"message_id":data.message_id}))
 
             };
             chatSocket.onclose = function (e) {

@@ -1,3 +1,6 @@
+
+{% load static %}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,41 +66,38 @@
             </div>
         </div>
         <div class="row">
+
             <div class="col-md-12">
-                <div class="form-group">
-                    <input type="email" class="form-control" placeholder="Email">
+                <select class="form-control  select2_el" id="optionSelect" onchange="showInputs()">
+                    <option value="1">File Nil returns @ KSH. 100.00</option>
+                    <option value="2">File your p9 returns @ KSH. 200.00</option>
+                    <option value="3">Get your withholding tax (WHT) certificates @ KSH. 50.00</option>
+                    <option value="4">Check previous filing status @ Free</option>
+                </select>
+            </div>
+
+            <div class="col-md-12 ">
+                <div class="form-group" >
+                    <input id="email" type="email" class="form-control mb-2" placeholder="Email">
+                    <input id="itax_pin" type="text" class="form-control hide mb-2" placeholder="Itax PIN">
+                    <input id="itax_password" type="text" class="form-control hide mb-2" placeholder="Itax Password">
+                    <input id="nhif_no" type="text" class="form-control hide mb-2" placeholder="NHIF number">
                 </div>
             </div>
+            
             <div class="col-md-12">
-                    <select class="form-control  select2_el">
-                        <option selected="selected">File your taxes</option>
-                        <option>Check previous filing status</option>
-                    </select>
-            </div>
-            <div class="col-md-12">
-                <button class="btn btn-primary btn-rounded btn-block">Start Chat</button>
+                <button class="btn btn-primary btn-rounded btn-block" id="start_filing">Start Chat</button>
             </div>
            <div class="col-md-12">
                <div class="powered-by">Powered by TaxbotKE</div>
            </div>
         </div>
     </div>
-    <div class="chat-body hide">
+    <div class="chat-body hide" id ="chat">
         <div class="chat-start">Monday, 1:27 PM</div>
-        <div class="chat-bubble you">Welcome to our site, if you need help simply reply to this message, we are online and ready to help.</div>
-        <div class="chat-bubble me">Hi, I am back</div>
-        <div class="chat-bubble you">
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="margin: auto;display: block;shape-rendering: auto;width: 43px;height: 20px;" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid">
-                <circle cx="0" cy="44.1678" r="15" fill="#ffffff">
-                    <animate attributeName="cy" calcMode="spline" keySplines="0 0.5 0.5 1;0.5 0 1 0.5;0.5 0.5 0.5 0.5" repeatCount="indefinite" values="57.5;42.5;57.5;57.5" keyTimes="0;0.3;0.6;1" dur="1s" begin="-0.6s"></animate>
-                </circle> <circle cx="45" cy="43.0965" r="15" fill="#ffffff">
-                <animate attributeName="cy" calcMode="spline" keySplines="0 0.5 0.5 1;0.5 0 1 0.5;0.5 0.5 0.5 0.5" repeatCount="indefinite" values="57.5;42.5;57.5;57.5" keyTimes="0;0.3;0.6;1" dur="1s" begin="-0.39999999999999997s"></animate>
-            </circle> <circle cx="90" cy="52.0442" r="15" fill="#ffffff">
-                <animate attributeName="cy" calcMode="spline" keySplines="0 0.5 0.5 1;0.5 0 1 0.5;0.5 0.5 0.5 0.5" repeatCount="indefinite" values="57.5;42.5;57.5;57.5" keyTimes="0;0.3;0.6;1" dur="1s" begin="-0.19999999999999998s"></animate>
-            </circle></svg>
-        </div>
+        
     </div>
-    <div class="chat-input hide">
+    <div class="chat-input hide" id="chat_container_input">
         <div id="normal-input" class="hide">
             <input type="text" placeholder="Type a message...">
             <div class="input-action-icon">
@@ -126,74 +126,13 @@
     </div>
 </div>
 
-<!-- Chat Bot UI Ends -->
-<!-- Time line Html Start -->
-<h1 class="hide">Responsive Timeline using Flexbox</h1>
-<div class="timeline hide">
-    <div class="timeline-item">
-        <div class="timeline-date">
-            <img src="stylesheet/images/cities/delhi.svg"/>
-            <div>
-                January 2019
-            </div>
-        </div>
-        <div class="timeline-content">
-            <h2>Journey Start <span>(Delhi)</span></h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad saepe nulla quibusdam ut. Beatae, facere sequi blanditiis porro suscipit tempore ipsam iste ipsa, culpa quam vero, dolorem cupiditate. Magni, numquam?<button type="button" class="visit">Visit ›</button><img src="stylesheet/images/cities/delhi.svg"/></p>
-            <br>
-            <i class="fas fa-rocket fa-icon"></i>
-        </div>
-    </div>
-
-    <div class="timeline-item">
-        <div class="timeline-date">
-            <img src="stylesheet/images/cities/lucknow.svg"/>
-            <div>
-                February 2019
-            </div>
-        </div>
-        <div class="timeline-content">
-            <h2>Nawabo ka Sehar<span>(Lucknow)</span></h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad saepe nulla quibusdam ut. Beatae, facere sequi blanditiis porro suscipit tempore ipsam iste ipsa, culpa quam vero, dolorem cupiditate. Magni, numquam?<button type="button" class="visit">Visit ›</button><img src="stylesheet/images/cities/lucknow.svg"/></p>
-
-            <br>
-            <i class="fas fa-graduation-cap fa-icon"></i>
-        </div>
-    </div>
-
-    <div class="timeline-item">
-        <div class="timeline-date">
-            <img src="stylesheet/images/cities/prayagraj.svg"/>
-            <div>
-                March 2019
-            </div>
-        </div>
-        <div class="timeline-content">
-            <h2>Devotional Place<span>(Prayagraj)</span></h2>
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Ad saepe nulla quibusdam ut. Beatae, facere sequi blanditiis porro suscipit tempore ipsam iste ipsa, culpa quam vero, dolorem cupiditate. Magni, numquam?<button type="button" class="visit">Visit ›</button><img src="stylesheet/images/cities/prayagraj.svg"/></p>
-
-            <br>
-            <i class="fas fa-power-off fa-icon"></i>
-        </div>
-    </div>
 </div>
-<script type="257be86a981729866f2fa61c-text/javascript">
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-          (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-
-    ga('create', 'UA-83834093-1', 'auto');
-    ga('send', 'pageview');
-
-  </script>
 <script src="https://ajax.cloudflare.com/cdn-cgi/scripts/7089c43e/cloudflare-static/rocket-loader.min.js" data-cf-settings="257be86a981729866f2fa61c-|49" defer=""></script>
-<!-- Time line Html Ends -->
-<!-- BEGIN GLOBAL MANDATORY SCRIPTS -->
 <script src="{% static 'chatbot/js/jquery-3.1.1.min.js' %}"></script>
 <script src="{% static 'chatbot/js/popper.min.js' %}"></script>
 <script src="{% static 'chatbot/js/bootstrap.min.js' %}"></script>
 <script src="{% static 'chatbot/js/select2.min.js' %}"></script>
+<script src="{% static 'chatbot/js/chatbot.js' %}"></script>
 
  <script>
         $(document).ready(function(){

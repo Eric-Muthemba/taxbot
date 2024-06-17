@@ -10,7 +10,7 @@ from django.contrib.auth.views import (
     PasswordResetCompleteView
 )
 from django.urls import path, include
-from jobs.views import landing_page, LandingPageView, SignupView, DashboardView, ChatbotPageView
+from jobs.views import landing_page, LandingPageView, SignupView, DashboardView,Chatbot2PageView, ChatbotPageView
 
 
 urlpatterns = [
