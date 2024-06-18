@@ -21,14 +21,13 @@ class Excel():
         self.TEMPLATE_FILE = params["TEMPLATE_FILE"]
         self.GENERATED_DOCUMENT_FOLDER = params["GENERATED_DOCUMENT_FOLDER"].replace("channel_id",channel_id)
         
-    def __init__(self, saving_name,P9_data=None,channel_id=None):
+    def __init__(self, saving_name,channel_id=None):
         self._get_parameters(channel_id)
         self.template_file_path = self.BASE_PATH+self.TEMPLATE_FILE
         self.saving_path =  self.BASE_PATH+self.GENERATED_DOCUMENT_FOLDER + f'{saving_name}.xlsm'
         self.channel_id = saving_name
+    def update_cells(self,P9_data=None,):
         self.P9_data = P9_data
-
-    def update_cells(self):
         db_response_object = db.read(self.channel_id)
         if len(db_response_object) > 0:
             start_filing_date = f"01/01/{db_response_object[0][12]}"
@@ -131,11 +130,10 @@ class Excel():
         xl.Visible = False
         xl.DisplayAlerts = False
         xl.AskToUpdateLinks = False
-
         wb = xl.Workbooks.Open(self.saving_path, ReadOnly=True)
-
         wb.Application.Run("createErrorSheet")
         wb.Close(SaveChanges=False)
         xl.Quit()
+
 
 

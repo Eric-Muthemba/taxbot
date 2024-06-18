@@ -55,6 +55,8 @@ class Job(models.Model):
     status = models.CharField(choices=STATUS,max_length=20,default="In_Progress")
     step = models.CharField(max_length=50,default="START")
     tax_document_extracted_info = jsonfield.JSONField(default=list)
+    email = models.CharField(max_length=255,null=True)
+    manual_filing = models.BooleanField(default=False)
     #organisation = models.ForeignKey(UserProfile, on_delete=models.CASCADE)
     agent = models.ForeignKey("Agent", null=True, blank=True, on_delete=models.SET_NULL)
     #category = models.ForeignKey("Category", related_name="jobs", null=True, blank=True, on_delete=models.SET_NULL)

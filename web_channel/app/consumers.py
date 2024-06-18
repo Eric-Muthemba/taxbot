@@ -1,5 +1,6 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.exceptions import StopConsumer
 from django.http import SimpleCookie
 from asgiref.sync import sync_to_async,async_to_sync
 from jobs.utilities import state_machine
@@ -30,6 +31,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
     async def disconnect(self, close_code):
         # Leave room group
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        await self.close()
+        raise StopConsumer()
+
+
 
     async def receive(self, text_data=None, bytes_data=None):
 
@@ -38,8 +43,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
         if text_data:
             text_data_json = json.loads(text_data)
-            print(text_data_json)
-
             message = text_data_json['message']
 
         

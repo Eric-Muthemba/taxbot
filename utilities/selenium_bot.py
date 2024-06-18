@@ -4,19 +4,19 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
 from selenium import webdriver
-import pytesseract
 from PIL import Image
 import string
 import io
 import os
 import cv2
-
-pytesseract.pytesseract.tesseract_cmd = 'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+from time import sleep
+from textextract import extract_text_from_image
 
 class Itax(object):
-    def __init__(self, file_nil, itax_pin, itax_password, doc_to_be_uploaded=None, screenshot_path=None):
+    def __init__(self, file_nil, channel_id,itax_pin, itax_password, doc_to_be_uploaded=None, screenshot_path=None):
+        print(doc_to_be_uploaded)
         self.itax_website_url = "https://itax.kra.go.ke/KRA-Portal/"
-
+        
         self.pin_input_xpath = "//*[@id=\"logid\"]"
         self.password_input_xpath = "//*[@id=\"xxZTT9p2wQ\"]"
         self.continue_button_xpath = "//*[@id=\"normalDiv\"]/table/tbody/tr[3]/td[2]/a"
@@ -35,7 +35,12 @@ class Itax(object):
         self.upload_tax_return_input_xpath = "//*[@id=\"file\"]"
         self.invalid_credentials_xpath = "/html/body/div[3]/div[3]/table/tbody/tr/td/div/form/table/tbody/tr[1]/td[1]/table/tbody/tr[3]/td/div[3]/table[1]/tbody/tr/td/font"
         self.wrong_password = False
-        self.captcha_file = "image.png"
+        self.captcha_file = f"C:\\taxbot\\web_channel\\media\\uploads\\{channel_id}\\capture_image.png"
+        
+        self.success_text = '//*[@id="PINReceipt"]/div[2]/center/div/table/tbody/tr[2]/td'
+        '''	Return Submitted successfully with Acknowledgement Number: KRA202445300049 '''
+        self.download_confirmation = '//*[@id="PINReceipt"]/div[2]/center/div/table/tbody/tr[3]/td/a'
+        
         self.screenshot_path = screenshot_path
         self.itax_pin = itax_pin
         self.itax_password = itax_password
@@ -64,10 +69,12 @@ class Itax(object):
                     self.upload_and_submit_tax_returns()
 
                 self.take_screenshot()
+            
+            self.driver.close()
 
         except Exception as e:
             self.driver.close()
-            Itax(file_nil=file_nil, itax_pin=itax_pin, itax_password=itax_password,
+            Itax(file_nil=file_nil,channel_id=channel_id, itax_pin=itax_pin, itax_password=itax_password,
                  doc_to_be_uploaded=doc_to_be_uploaded, screenshot_path=screenshot_path)
 
     def captcha_solver(self):
@@ -77,8 +84,9 @@ class Itax(object):
         screenshot = self.driver.get_screenshot_as_png()
         image = Image.open(io.BytesIO(screenshot))
 
-        location = {"x": 200, "y": 350}
-        size = {"width": 150, "height": 50}
+        location = {"x": 400, "y": 700}
+        size = {"width": 200, "height": 100}
+        
         # Define the coordinates for cropping
         left = location['x']
         top = location['y']
@@ -88,34 +96,11 @@ class Itax(object):
         # Crop the image to the element's area
         cropped_image = image.crop((left, top, right, bottom))
         cropped_image.save(self.captcha_file)  # Save the image to a file
-        image = cv2.imread(self.captcha_file)
-
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        _, threshold = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)
-        threshold = cv2.bitwise_not(threshold)
-        cv2.imwrite('thresholded_image.png', threshold)
-        extracted_text = pytesseract.image_to_string(threshold)
-
+        
         acceptable_characters = string.digits + "-+*/"
-        question_mark_found = False
-        plus_found = False
-        if "?" in extracted_text:
-            question_mark_found = True
-        if "+" in extracted_text:
-            plus_found = True
+        extracted_text = extract_text_from_image(self.captcha_file)
         result = "".join(list(filter(lambda c: c in acceptable_characters, extracted_text)))
-
-        if question_mark_found == False and result[-1] == "7":
-            result = result[:-1]
-        if plus_found == False:
-            result = result.replace("4", "+")
-        if result[-1] == "+":
-            result[-1] = 4
-        if result[0] == "+":
-            result[0] = 4
-        if "-" in result:
-            result.replace("+", "4")
-
+        
         print("="*30)
         print(result)
         print(eval(result))
@@ -133,32 +118,47 @@ class Itax(object):
         self.driver.get(self.itax_website_url)
 
     def login_to_itax_website(self):
+        
         itax_pin_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.pin_input_xpath)))
         itax_pin_input.send_keys(self.itax_pin)
-
         continue_button = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.continue_button_xpath)))
         continue_button.click()
 
-        itax_password_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.password_input_xpath)))
-        itax_password_input.send_keys(self.itax_password)
 
-        result = self.captcha_solver()
+        try:
+            self.wait.until(EC.alert_is_present(),
+                                   'Timed out waiting for PA creation ' +
+                                   'confirmation popup to appear.')
+            alert = self.driver.switch_to_alert()
 
-        captcha = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.captcha_input_xpath)))
-        captcha.send_keys(result)
+            alert.accept()
 
-        login_button = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.login_button_xpath)))
-        login_button.click()
-
-
-        sleep(10)
-
-        elements = self.driver.find_elements_by_xpath(self.invalid_credentials_xpath)
-
-        if len(elements) > 0:
             self.wrong_password = True
 
-        
+        except:
+            pass
+
+
+        if not self.wrong_password:
+           
+            itax_password_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.password_input_xpath)))
+            itax_password_input.send_keys(self.itax_password)
+
+            result = self.captcha_solver()
+
+            captcha = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.captcha_input_xpath)))
+            captcha.send_keys(result)
+
+            login_button = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.login_button_xpath)))
+            login_button.click()
+
+
+            try:
+                self.wait.until(EC.visibility_of_element_located((By.XPATH, self.invalid_credentials_xpath)))
+                self.wrong_password = True
+            except:
+                pass
+
     def navigate_to_file_nil_tax_page(self):
         main_returns_page_button = self.wait.until(
             EC.visibility_of_element_located((By.XPATH, self.main_returns_page_button_xpath)))
@@ -207,14 +207,16 @@ class Itax(object):
             EC.visibility_of_element_located((By.XPATH, self.tax_return_period_from_xpath))).get_attribute('value')
         tax_return_period_to = self.wait.until(
             EC.visibility_of_element_located((By.XPATH, self.tax_return_period_to_xpath))).get_attribute('value')
-
         agree_to_terms_and_conditions_checkbox = self.wait.until(
             EC.visibility_of_element_located((By.XPATH, self.agree_to_terms_and_conditions_checkbox_xpath)))
         agree_to_terms_and_conditions_checkbox.click()
-
-        upload_zip_file = self.wait.until(
-            EC.visibility_of_element_located((By.XPATH, self.upload_tax_return_input_xpath)))
-        upload_zip_file.send_keys(os.getcwd() + self.zipfile_location)
+        upload_zip_file = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.upload_tax_return_input_xpath)))
+        try:
+            upload_zip_file.send_keys(self.zipfile_location)
+        except Exception as e:
+            print(e)
 
         print(tax_return_period_from, "-", tax_return_period_to)
 
+
+    #def get obligations

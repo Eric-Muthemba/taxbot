@@ -221,7 +221,7 @@ tr {
         window.onload = PrepopulateInitialConvo();
 
         function initializeWebSocket() {
-            chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/');
+            chatSocket = new WebSocket('wss://' + window.location.host + '/ws/chat/');
             chatSocket.onopen = function (event) {
                 console.log('WebSocket is open now.');
                 statusDot.style.backgroundColor = 'green';

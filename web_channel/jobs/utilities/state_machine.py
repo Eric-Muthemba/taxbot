@@ -52,7 +52,6 @@ def state_machine(channel,message,channel_id):
             ],
             "cookie":str(job.channel_id)
         }            
-
     elif jobs[0].step == "CHOOSE_PROCESS":
         response = {}
 
@@ -111,7 +110,7 @@ def state_machine(channel,message,channel_id):
         else:
             response["message"] = "Invalid KRA Pin entered.<br>Kindly enter your correct KRA PIN?"
     elif jobs[0].step == "CHECK_IF_EMPLOYED_OR_HAD_INCOME":
-
+        print(message)
         if message == "1":
             response = {"message": "From 2023, KRA allows for tax relief from your NHIF contributions.\n Enter your NHIF Number ..."}
             jobs.update(step="GET_NHIF_NO")
@@ -119,7 +118,6 @@ def state_machine(channel,message,channel_id):
             response = {"message": " To File Nil returns, Enter your phone number to pay KES 100.00"}
             jobs.update(file_nil=True, step="REQUEST_PAYMENT")
     elif jobs[0].step == "GET_NHIF_NO":
-        jobs.update(nhif_no=message, step="UPLOAD_P9_FORM")
         response = {
             "keyboard_type": "options",
             "message": f"Answer yes if any of the below apply in the year {jobs[0].year_of_filling}  <br>"
@@ -140,12 +138,46 @@ def state_machine(channel,message,channel_id):
                 {"key": "No","value": 0},
             ]
         }
+        jobs.update(nhif_no=message, step="UPLOAD_P9_FORM")
+
     elif jobs[0].step == "UPLOAD_P9_FORM":
-        response = {
-            "keyboard_type": "upload_pdf",
-            "message": "Kindly upload your P9 form"
-        }
-        jobs.update(step="EXTRACT_DOCUMENT_INFO")
+        if message =="0":
+            response = {
+                "keyboard_type": "upload_pdf",
+                "message": "Kindly upload your P9 form"
+            }
+            jobs.update(manual_filing=False, step="EXTRACT_DOCUMENT_INFO")
+        else:
+            response = {
+                "keyboard_type": "upload_pdf",
+                "message": "I wish to redirect you our human agent.<br>"\
+                           "Details of share profits/Surplus/loss - if you have a partnership income <br>"\
+                           "Details of share of income in which you are a beneficiary of estate/trust/settlement - if you have n estate trust income <br>"\
+                           "Computation of value of car benefits - if you your employer has provided you with a car <br>"\
+                           "Computation of value of mortgage intrest - if you have mortgage<br>"\
+            }
+            jobs.update(manual_filing=True, step="UPLOAD_COMPLEX_SCENARIO_DOCS")
+
+    elif jobs[0].step == "UPLOAD_COMPLEX_SCENARIO_DOCS":
+                # Save the file using FileSystemStorage
+        base_path = os.path.join(settings.MEDIA_ROOT, f'uploads/{channel_id}')
+        complex_scenario_docs = base_path+"/complex_scenario_docs"
+
+        if not os.path.exists(base_path):
+            os.makedirs(base_path)
+        if not os.path.exists(complex_scenario_docs):
+            os.makedirs(complex_scenario_docs)
+
+        '''file_path=complex_scenario_docs+"/file.pdf"
+
+        with open(file_path, 'wb') as f:
+            print(type(message))
+            f.write(message)'''
+        response = {"message": "To continue, Enter your phone number to pay KES 1500.00"}
+        jobs.update(email=message, step="REQUEST_PAYMENT")
+        
+
+        
     elif jobs[0].step == "EXTRACT_DOCUMENT_INFO":
         # Save the file using FileSystemStorage
         base_path = os.path.join(settings.MEDIA_ROOT, f'uploads/{channel_id}')
@@ -264,18 +296,27 @@ def state_machine(channel,message,channel_id):
                 jobs.update( step="CHECK_SERVICE_CHOOSEN")
     elif jobs[0].step == "CHECK_SERVICE_CHOOSEN":
             if message == "1":
-                response = {"message": "To continue, Enter your phone number to pay KES 200.00"}
-                jobs.update( output_option=message,step="REQUEST_PAYMENT")
+                response = {"message": "Enter your Email address to receive your documents"}
+                jobs.update( output_option=message,step="ENTER_EMAIL")
             else:
                 response = {"message": "Please enter your password to proceed ..."}
                 jobs.update( output_option=message,step="GET_KRA_PASSWORD")
+
+    
     elif jobs[0].step == "GET_KRA_PASSWORD":
+        response = {"message": "Enter your Email address to receive your documents"}
+        jobs.update(kra_password=message, step="ENTER_EMAIL")
+
+    elif jobs[0].step == "ENTER_EMAIL":
         response = {"message": "To continue, Enter your phone number to pay KES 200.00"}
-        jobs.update(kra_password=message, step="REQUEST_PAYMENT")
+        jobs.update(email=message, step="REQUEST_PAYMENT")
+
     elif jobs[0].step == "REQUEST_PAYMENT" or (message == "2" and jobs[0].step == "CHECK_IF_PAID"):
         if len(message) >= 9:
             phone_number = "0" + message[-9:]
-            if jobs[0].file_nil:
+            if jobs[0].manual_filing:
+                amount=1
+            elif jobs[0].file_nil:
                 amount=1
             else:
                 amount=2
@@ -300,15 +341,20 @@ def state_machine(channel,message,channel_id):
         jobs.update(step="CHECK_IF_PAID")
     elif jobs[0].step == "CHECK_IF_PAID":
         if message == "1":
-
-            if True: #jobs[0].mpesa_paid_amount == jobs[0].expected_payment_amount:
+            if True:#jobs[0].mpesa_paid_amount == jobs[0].expected_payment_amount:
                 response = {"message": "Filing. Kindly be patient."}
-                if jobs[0].file_nil:
-                    publish_notification({'queue':'p9_upload',
-                                          'operation': "excel_filing_and_file_tax_on_itax",
+
+                if jobs[0].manual_filing:
+                        response = {"message": "Thanks for choosing TaxbotKe. once done our agent will reach out for confirmation.(in ~ 3 hrs)"}
+                        jobs.update(step="DONE", payment_status="PAID")
+
+                elif jobs[0].file_nil:
+                    publish_notification({'queue':'excel_filing',
+                                          'operation': "file_nil_returns",
                                           'channel': 'Web',
                                           'channel_id': channel_id,
                                           'file_nil':True})
+                    jobs.update(step="GENERATING_TAX_DOCUMENT", payment_status="PAID")
 
                 else:
                     if jobs[0].output_option == "1":
@@ -322,7 +368,7 @@ def state_machine(channel,message,channel_id):
                                                   'channel': 'Web',
                                                   'channel_id': channel_id,
                                                   'file_nil':False})
-                jobs.update(step="GENERATING_TAX_DOCUMENT", payment_status="PAID")
+                    jobs.update(step="GENERATING_TAX_DOCUMENT", payment_status="PAID")
 
             else:
                 response = {"message": "Not paid.<br>Once paid press PAID else CANCEL.<br>Press Retrigger STK push to get the stk push ",
@@ -335,7 +381,7 @@ def state_machine(channel,message,channel_id):
                     }
 
         else:
-            response = { "message": "Thanks for using TaxbotKE." }
+            response = {"message": "Thanks for choosing TaxbotKe."}
             jobs.update(step="DONE")
     elif jobs[0].step == "GENERATING_TAX_DOCUMENT":
         response = {"message": message}
