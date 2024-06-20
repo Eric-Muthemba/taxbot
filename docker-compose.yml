@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+#  TaxBotKECRM:
+#    build: web_channel/
+#    image: tax_bot_ke_crm:latest
+#    container_name: "TaxBotKECRM"
+#    command: bash -c "export READ_DOT_ENV_FILE=True && python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:80"
+#    volumes:
+#      - ./web_channel/:/app
+#    ports:
+#      - "8087:80"
+#    depends_on:
+#      - TaxBotKEDB
+#      - TaxBotKERedis
+#      - rabbit
+  TaxBotKERedis:
+    container_name: 'TaxBotKERedis'
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  TaxBotKEDB:
+    container_name: 'TaxBotKEDB'
+    image: postgres:15.2-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PORT=5432
+    ports:
+      - "5440:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+  TaxBotKERedisCommander:
+    container_name: 'TaxBotKERedisCommander'
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:TaxBotKERedis:6379
+      - HTTP_USER=root
+      - HTTP_PASSWORD=qwerty
+    ports:
+      - "8085:8081"
+    depends_on:
+      - TaxBotKERedis
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    hostname: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+      - RABBITMQ_DEFAULT_VHOST=/
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+#  TaxBotKECRMWorker:
+#    image: tax_bot_ke_crm:latest
+#    restart: on-failure
+#    container_name: "TaxBotKECRMWorker"
+#    command: >
+#      sh -c "export READ_DOT_ENV_FILE=True && celery -A app worker --loglevel=INFO"
+#    depends_on:
+#      - TaxBotKECRM
+#      - rabbit
+#    volumes:
+#      - ./web_channel/:/app
+
+#  nginx:
+#    image: nginx:latest
+#    ports:
+#      - "8080:80"
+#      - "7500:7500"
+#    volumes:
+#      - ./nginx.conf:/etc/nginx/nginx.conf
+#    depends_on:
+#      - TaxBotKECRM
+
+volumes:
+  redis_data:
+  postgres-data:
