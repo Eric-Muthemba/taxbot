@@ -88,36 +88,11 @@ class DashboardView(OrganisorAndLoginRequiredMixin, generic.TemplateView):
         })
         return context
 
-class ChatbotPageView(generic.TemplateView):
-    template_name = "chatbot.html"
-
-    def dispatch(self, request, *args, **kwargs):
-        # Check if the 'client_id' cookie is set
-        if 'channel_id' not in request.COOKIES:
-            # Get the response object from the parent dispatch method
-            response = super().dispatch(request, *args, **kwargs)
-            # Set the cookie in the response
-            job = Job.objects.create(channel="Web",session_status="Active")
-            channel_id=job.channel_id
-            response.set_cookie('channel_id', channel_id, max_age=365 * 24 * 60 * 60)  # Cookie valid for 1 year
-            return response
-        else:
-            return super().dispatch(request, *args, **kwargs)
 
 class Chatbot2PageView(generic.TemplateView):
     template_name = "chatbot2.html"
 
     def dispatch(self, request, *args, **kwargs):
-        # Check if the 'client_id' cookie is set
-        if 'channel_id' not in request.COOKIES:
-            # Get the response object from the parent dispatch method
-            response = super().dispatch(request, *args, **kwargs)
-            # Set the cookie in the response
-            job = Job.objects.create(channel="Web",session_status="Active")
-            channel_id=job.channel_id
-            response.set_cookie('channel_id', channel_id, max_age=365 * 24 * 60 * 60)  # Cookie valid for 1 year
-            return response
-        else:
             return super().dispatch(request, *args, **kwargs)
 
 class MpesaCallback(generics.CreateAPIView):

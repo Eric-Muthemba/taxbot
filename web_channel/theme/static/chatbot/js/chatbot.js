@@ -3,7 +3,7 @@ let reconnectInterval = 1000; // Initial reconnection interval in milliseconds
 let maxReconnectInterval = 30000; // Maximum reconnection interval in milliseconds
 
 window.onload = function (){
-    //PrepopulateInitialConvo();
+    initializeWebSocket();
     showInputs();
 }
 
