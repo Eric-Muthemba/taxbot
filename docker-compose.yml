@@ -1,19 +1,19 @@
 version: '3.8'
 
 services:
-  TaxBotKECRM:
-    build: web_channel/
-    image: tax_bot_ke_crm:latest
-    container_name: "TaxBotKECRM"
-    command: bash -c "export READ_DOT_ENV_FILE=True && python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:80"
-    volumes:
-      - ./web_channel/:/app
-    ports:
-      - "8087:80"
-    depends_on:
-      - TaxBotKEDB
-      - TaxBotKERedis
-      - rabbit
+#  TaxBotKECRM:
+#    build: web_channel/
+#    image: tax_bot_ke_crm:latest
+#    container_name: "TaxBotKECRM"
+#    command: bash -c "export READ_DOT_ENV_FILE=True && python3 manage.py makemigrations && python3 manage.py migrate && python3 manage.py runserver 0.0.0.0:80"
+#    volumes:
+#      - ./web_channel/:/app
+#    ports:
+#      - "8087:80"
+#    depends_on:
+#      - TaxBotKEDB
+#      - TaxBotKERedis
+#      - rabbit
   TaxBotKERedis:
     container_name: 'TaxBotKERedis'
     image: redis:latest
@@ -57,27 +57,17 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-  TaxBotKECRMWorker:
-    image: tax_bot_ke_crm:latest
-    restart: on-failure
-    container_name: "TaxBotKECRMWorker"
-    command: >
-      sh -c "export READ_DOT_ENV_FILE=True && celery -A app worker --loglevel=INFO"
-    depends_on:
-      - TaxBotKECRM
-      - rabbit
-    volumes:
-      - ./web_channel/:/app
-
-#  nginx:
-#    image: nginx:latest
-#    ports:
-#      - "8080:80"
-#      - "7500:7500"
-#    volumes:
-#      - ./nginx.conf:/etc/nginx/nginx.conf
+#  TaxBotKECRMWorker:
+#    image: tax_bot_ke_crm:latest
+#    restart: on-failure
+#    container_name: "TaxBotKECRMWorker"
+#    command: >
+#      sh -c "export READ_DOT_ENV_FILE=True && celery -A app worker --loglevel=INFO"
 #    depends_on:
 #      - TaxBotKECRM
+#      - rabbit
+#    volumes:
+#      - ./web_channel/:/app
 
 volumes:
   redis_data:
