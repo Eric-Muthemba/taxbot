@@ -532,6 +532,7 @@ class Itax(object):
 
             target = self.driver.find_element(By.XPATH, "/html/body/div[2]/div[4]/table/tbody/tr/td/div")
             try:
+                actions = ActionChains(self.driver)
                 for _ in range(0,10):
                     actions.send_keys_to_element(target, Keys.PAGE_DOWN).perform()
                     sleep(1)
