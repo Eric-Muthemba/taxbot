@@ -55,7 +55,7 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
                         job.screenshot_path = itax.screenshot_path
                         job.is_filed = True
                         job.save()
-                        response = {"id": channel_id, "is_start": False, "text": "Congraturations Nil Tax sucessfully filled", "error": False}
+                        response = {"id": channel_id, "is_start": False, "text": "Congratulations Nil Tax sucessfully filed", "error": False}
                         send_email_with_multiple_attachments(recipient_email=job.email,
                                                              path=itax.screenshot_path)
                     except Exception as e:
@@ -73,7 +73,7 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
                         if itax.error_detected:
                             response = {"id": channel_id, "is_start": False, "error": True}
                         else:
-                            response = {"id": channel_id, "is_start": False, "error": False, "text":f"Congraturations Tax sucessfully filled.<br>Refund due is : {refund_due}"}
+                            response = {"id": channel_id, "is_start": False, "error": False, "text":f"Congratulations Tax sucessfully filed.<br>Refund due is : KES. {refund_due}"}
                             job.screenshot_path = itax.screenshot_path
                             job.save()
                             send_email_with_multiple_attachments(recipient_email=job.email,

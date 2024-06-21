@@ -14,9 +14,9 @@ import os
 from time import sleep
 
 
-#import chromedriver_autoinstaller
+import chromedriver_autoinstaller
 
-#chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
+chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
 
 
 # and if it doesn't exist, download it automatically,
@@ -137,12 +137,12 @@ class Itax(object):
 
 
         options = Options()
-        options.binary_location = "/usr/bin/chromedriver/"
+        #options.binary_location = "/usr/bin/chromedriver/"
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--remote-debugging-pipe')
-        options.add_argument("--headless=new")
+        #options.add_argument("--headless=new")
         try:
             self.driver = webdriver.Chrome(options=options)
             self.wait = WebDriverWait(self.driver, 10)
@@ -163,10 +163,10 @@ class Itax(object):
         right = 300
         lower = 400
 
-        '''left = 600
+        left = 600
         upper = 700
         right = 800
-        lower = 800'''
+        lower = 800
 
         cropped_image = img.crop((left, upper, right, lower))
         cropped_image.save(self.captcha_file)  # Save the image to a file
@@ -258,6 +258,17 @@ class Itax(object):
             submit_nil_returns_button = self.wait.until(
                 EC.visibility_of_element_located((By.XPATH, self.submit_nil_returns_button_xpath)))
             submit_nil_returns_button.click()
+
+            try:
+                alert = self.driver.switch_to.alert
+                print(f"Alert text: {alert.text}")
+                alert.accept()
+            except Exception as e:
+                print("Alert not found")
+
+            sleep(20)
+            print("Tax filled sucessfully")
+
             self.take_screenshot()
         except Exception as e:
             print(e)
@@ -360,7 +371,6 @@ class Itax(object):
 
         return {"tax_return_period_from":tax_return_period_from,
                 "has_obligations":self.has_obligations}
-
 
 
     def navigate_to_filing_tax_page(self,number_of_recursion=0):
@@ -556,6 +566,7 @@ class Itax(object):
         except Exception as e:
             print("Alert not found")
 
+        sleep(20)
         print("Tax filled sucessfully")
         self.take_screenshot()
 

@@ -150,7 +150,7 @@ def state_machine(channel, message,file=None):
 
             else:
                response =  {
-                                "message": ["Verifying you don't have any witholding tax obligations ..."],
+                                "message": ["Bot checking for any existing witholding tax obligations.<br><br>Do not refresh, this might take up to 1 minute to complete."],
                                 "has_table": False,
                                 "keyboard_type": None
                             }
@@ -248,7 +248,7 @@ def state_machine(channel, message,file=None):
             standard_data = message["standard_data"]
 
 
-            response = {"message": ["Kindly confirm if the data extracted from provided document is correct.<br> if not, kindly update accordingly/"],
+            response = {"message": ["Kindly confirm if the data extracted from provided document is correct.<br> if not, please update accordingly and validate."],
                          "has_table": True,
                          "table_type": "validator",
                          "table_id": "p9_data_verifier",
@@ -307,8 +307,8 @@ def state_machine(channel, message,file=None):
             option_choosen =  message["text"]
             if option_choosen == "continue_button":
                 #check if paid
-                if True:
-                #if job.expected_payment_amount == job.mpesa_paid_amount:
+                #if True:
+                if job.expected_payment_amount == job.mpesa_paid_amount:
                     response = {
                         "message": ["Tax filing in progress, do not interrupt"],
                         "has_table": False,
