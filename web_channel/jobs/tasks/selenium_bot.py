@@ -527,10 +527,20 @@ class Itax(object):
         pension_contributions_input.send_keys(Keys.DELETE)
         pension_contributions_input.send_keys(pension_contributions)
 
+        try:
+            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
-        submit_tax = self.driver.find_element(By.XPATH, self.submit_tax_xpath)
-        actions = ActionChains(self.driver)
-        actions.move_to_element(submit_tax).perform()
+            target = self.driver.find_element(By.XPATH, "/html/body/div[2]/div[4]/table/tbody/tr/td/div")
+            try:
+                for _ in range(0,10):
+                    actions.send_keys_to_element(target, Keys.PAGE_DOWN).perform()
+                    sleep(1)
+            except:
+                print("error scrolling inner")
+
+        except:
+            print("error scrolling")
+
 
         refund_due = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.refund_due_xpath))).get_attribute('value')
 
