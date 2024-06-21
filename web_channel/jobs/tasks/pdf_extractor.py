@@ -14,7 +14,7 @@ class pdf_extractor():
             self.lines = page.extract_text().split("\n")
         self.extract_employer_info()
         self.extract_table()
-        self.standard_data = {"pension_contributions":0.00,
+        self.standard_data = {"pension_contributions_column_E2":0.00,
                               "nhif_contributions":0.00 }
         self.validator()
 
@@ -106,7 +106,7 @@ class pdf_extractor():
     def validator(self):
         print(self.response["totals"])
         try:
-            self.standard_data["pension_contributions"] = self.response["totals"]["totals_E3"]
+            self.standard_data["pension_contributions_column_E2"] = self.response["totals"]["totals_E3"]
         except:
             pass
         try:
