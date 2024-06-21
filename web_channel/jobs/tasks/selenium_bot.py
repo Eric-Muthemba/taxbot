@@ -536,15 +536,17 @@ class Itax(object):
                 for _ in range(0,10):
                     actions.send_keys_to_element(target, Keys.PAGE_DOWN).perform()
                     sleep(1)
-            except:
+            except Exception as e:
+                print(e)
                 print("error scrolling inner")
 
         except:
             print("error scrolling")
 
-
-        refund_due = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.refund_due_xpath))).get_attribute('value')
-
+        try:
+            refund_due = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.refund_due_xpath))).get_attribute('value')
+        except Exception as e:
+            print(e)
         submit_tax = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.submit_tax_xpath)))
         submit_tax.click()
 
