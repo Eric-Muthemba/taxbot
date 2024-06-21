@@ -102,6 +102,7 @@ class Itax(object):
 
         self.screenshot_path = os.getenv("SCREENSHOT_PATH").format(task_id)
         self.captcha_file = os.getenv("CAPTURE_FILE_LOCATION").format(task_id)
+        self.task_id = task_id
         self.itax_pin = itax_pin
         self.itax_password = itax_password
         self.wrong_password = False
@@ -143,7 +144,7 @@ class Itax(object):
         location = captcha_image.location
         size = captcha_image.size
         screenshot = self.driver.get_screenshot_as_png()
-        self.driver.save_screenshot(os.getenv("BASE_UPLOAD_DIR").format(task_id)+"/full_page.png")
+        self.driver.save_screenshot(os.getenv("BASE_UPLOAD_DIR").format(self.task_id)+"/full_page.png")
         image = Image.open(io.BytesIO(screenshot))
 
         location = {"x": 200, "y": 700}
