@@ -535,7 +535,7 @@ class Itax(object):
                 actions = ActionChains(self.driver)
                 for _ in range(0,10):
                     actions.send_keys_to_element(target, Keys.PAGE_DOWN).perform()
-                    sleep(1)
+                    sleep(0.5)
             except Exception as e:
                 print(e)
                 print("error scrolling inner")
@@ -543,16 +543,12 @@ class Itax(object):
         except:
             print("error scrolling")
 
-        try:
-            refund_due = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.refund_due_xpath))).get_attribute('value')
-        except Exception as e:
-            print(e)
-        submit_tax = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.submit_tax_xpath)))
-        submit_tax.click()
-
+        refund_due = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.refund_due_xpath))).get_attribute('value')
         print(refund_due)
 
-        sleep(5)
+        self.driver.execute_script("saveITRForEmpIncomeFinal()")
+        sleep(2)
+
         try:
             alert = self.driver.switch_to.alert
             print(f"Alert text: {alert.text}")
