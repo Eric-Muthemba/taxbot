@@ -131,6 +131,7 @@ def state_machine(channel, message,file=None):
                     "keyboard_type": "multi_upload"
                 }
                 job.next_step = "UPLOAD_COMPLEX_SCENARIO_DOCUMENTS"
+                job.expected_payment_amount = 1500
                 job.is_manual = True
                 job.save()
                 print(response)
