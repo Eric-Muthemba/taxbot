@@ -19,7 +19,7 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
         data = pdf_extractor(job.p9_file_path)
         response = {"id": channel_id, "is_start":False, "extracted_data": data.response,"standard_data":data.standard_data}
     else:
-        directory = f"/home/eric/Desktop/taxbot/web_channel/media/uploads/{channel_id}"
+        directory = os.getenv("BASE_UPLOAD_DIR").format(channel_id)
         if not os.path.exists(directory):
             os.makedirs(directory)
 
