@@ -306,8 +306,8 @@ def state_machine(channel, message,file=None):
             option_choosen =  message["text"]
             if option_choosen == "continue_button":
                 #check if paid
-                #if True:
-                if job.expected_payment_amount == job.mpesa_paid_amount:
+                if True:
+                #if job.expected_payment_amount == job.mpesa_paid_amount:
                     response = {
                         "message": ["Tax filing in progress, do not interrupt"],
                         "has_table": False,
