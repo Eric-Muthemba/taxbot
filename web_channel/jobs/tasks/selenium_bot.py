@@ -15,7 +15,7 @@ from time import sleep
 
 import chromedriver_autoinstaller
 
-chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
+#chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
 
 
 # and if it doesn't exist, download it automatically,
@@ -125,7 +125,7 @@ class Itax(object):
 
         options = Options()
         # options.add_argument("start-maximized")
-        options.binary_location = "/usr/local/bin/"
+        options.binary_location = "/usr/bin/chromedriver/"
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
