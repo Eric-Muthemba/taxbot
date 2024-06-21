@@ -266,8 +266,8 @@ def state_machine(channel, message,file=None):
                 "has_table": False,
                 "keyboard_type": "normal"}
 
-            job.pension_contributions = message["data"]["pension_contributions"]
-            job.nhif_contributions = message["data"]["nhif_contributions"]
+            job.pension_contributions = message["data"]["Pension_contributions_column_E2"]
+            job.nhif_contributions = message["data"]["NHIF_contributions_column_K2_insurance_relief"]
             job.next_step ="GET_PHONE_NUMBER"
             job.expected_payment_amount = 200
             job.save()
