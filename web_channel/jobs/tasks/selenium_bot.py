@@ -528,7 +528,7 @@ class Itax(object):
         pension_contributions_input.send_keys(pension_contributions)
 
 
-        submit_tax = self.driver.find_element_by_id(self.submit_tax_xpath)
+        submit_tax = self.driver.find_elements(By.XPATH, self.submit_tax_xpath)
         actions = ActionChains(self.driver)
         actions.move_to_element(submit_tax).perform()
 
