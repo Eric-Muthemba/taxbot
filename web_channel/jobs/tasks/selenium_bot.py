@@ -3,6 +3,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from .textextract import extract_text_from_image
@@ -15,7 +16,7 @@ from time import sleep
 
 import chromedriver_autoinstaller
 
-#chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
+chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
 
 
 # and if it doesn't exist, download it automatically,
@@ -76,6 +77,14 @@ class Itax(object):
         self.have_income_from_another_country_xpath = '//*[@id="hvFrnInc"]'
         self.have_disability_certificate_xpath = '//*[@id="hvEC"]'
         self.itr_bank_name_select_xpath = '//*[@id="lngBankId"]'
+        self.mpesa_bank_option_value="1054"
+        self.bank_branch_xpath = '//*[@id="lngBankBrnchId"]'
+        self.bank_branch_value = '2618'
+        self.bank_city_xpath = '//*[@id="strCity"]'
+        self.bank_city_value = 'Nairobi'
+        self.bank_account_name_xpath='//*[@id="strAccountName"]'
+        self.bank_account_number_xpath = '//*[@id="strAccountNo"]'
+
         #section L
         self.section_l_xpath = '//*[@id="etrSecL"]'
         self.insurance_company_pin_xpath = '//*[@id="in_empIncomeInsRelfDtl_3"]'
@@ -88,11 +97,14 @@ class Itax(object):
         self.maturity_date_input_xpath = '//*[@id="in_empIncomeInsRelfDtl_10"]'
         self.sum_assured_input_xpath = '//*[@id="in_empIncomeInsRelfDtl_11"]'
         self.annual_premiums_paid_xpath = '//*[@id="in_empIncomeInsRelfDtl_12"]'
+        self.add_policy = '//*[@id="a_empIncomeInsRelfDtl"]'
 
         #section T
         self.section_t_xpath = '//*[@id="etrSecT"]'
         self.pension_contributions_input_xpath = '//*[@id="dblPensionContribution"]'
 
+        self.submit_tax_xpath = '//*[@id="incomeDBTaxSubmit"]'
+        self.refund_due_xpath ='//*[@id="dblTaxRfndDue"]'
         #################################################################################
 
 
@@ -126,12 +138,12 @@ class Itax(object):
 
         options = Options()
         # options.add_argument("start-maximized")
-        options.binary_location = "/usr/bin/chromedriver/"
+        #options.binary_location = "/usr/bin/chromedriver/"
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--remote-debugging-pipe')
-        options.add_argument("--headless=new")
+        #options.add_argument("--headless=new")
         try:
             self.driver = webdriver.Chrome(options=options)
             self.wait = WebDriverWait(self.driver, 10)
@@ -147,10 +159,15 @@ class Itax(object):
         img = Image.open(image_path)
 
         # Define the box coordinates for cropping (left, upper, right, lower)
-        left = 200
+        '''left = 200
         upper = 350
         right = 300
-        lower = 400
+        lower = 400'''
+
+        left = 600
+        upper = 700
+        right = 800
+        lower = 800
 
         cropped_image = img.crop((left, upper, right, lower))
         cropped_image.save(self.captcha_file)  # Save the image to a file
@@ -400,7 +417,7 @@ class Itax(object):
 
         self.take_screenshot()
 
-    def file_itr_tax(self,pension_contributions,tax_payer_nhif_pin,nhif_contributions):
+    def file_itr_tax(self,pension_contributions,tax_payer_nhif_pin,nhif_contributions,phone_number):
         print("="*30)
         # section A
         self.tax_payer_name = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.itr_name_of_taxpayer_xpath))).get_attribute('value')
@@ -425,7 +442,29 @@ class Itax(object):
         select = Select(have_disability_certificate_input)
         select.select_by_value(self.drop_down_no_value)
 
-        sleep(10)
+
+        try:
+            bank_name_select = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.itr_bank_name_select_xpath)))
+            select = Select(bank_name_select)
+            select.select_by_value(self.mpesa_bank_option_value)
+
+            bank_branch = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.bank_branch_xpath)))
+            select = Select(bank_branch)
+            select.select_by_value(self.bank_branch_value)
+
+            bank_city = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.bank_city_xpath)))
+            bank_city.send_keys(self.bank_city_value)
+
+            bank_account_name = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.bank_account_name_xpath)))
+            bank_account_name.send_keys(self.tax_payer_name)
+
+            bank_account_number = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.bank_account_number_xpath)))
+            bank_account_number.send_keys(phone_number)
+
+        except Exception as e:
+            print(e)
+
+        sleep(3)
 
         # section L
         section_l = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.section_l_xpath)))
@@ -438,16 +477,17 @@ class Itax(object):
         type_of_policy_dropdown = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.type_of_policy_dropdown_xpath)))
         select = Select(type_of_policy_dropdown)
         select.select_by_value(self.type_of_policy_dropdown_nhif_value)
-        try:
-            policy_number_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.policy_number_input_xpath)))
-            policy_number_input.clear()
-            policy_number_input.send_keys(tax_payer_nhif_pin)
 
-            type_of_holder_dropdown = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.type_of_holder_xpath)))
-            select = Select(type_of_holder_dropdown)
-            select.select_by_value(self.type_of_holder_value)
-        except Exception as e:
-            print(e)
+        print(tax_payer_nhif_pin)
+        policy_number_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.policy_number_input_xpath)))
+        policy_number_input.send_keys(tax_payer_nhif_pin)
+
+
+
+        type_of_holder_dropdown = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.type_of_holder_xpath)))
+        select = Select(type_of_holder_dropdown)
+        select.select_by_value(self.type_of_holder_value)
+
 
         commencement_date_input = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.commencement_date_input_xpath)))
         commencement_date_input.clear()
@@ -458,25 +498,53 @@ class Itax(object):
         maturity_date_input.clear()
         maturity_date_input.send_keys(self.end_date)
 
-
+        sum_assured = str(float(nhif_contributions)/0.15)
         sum_assured_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.sum_assured_input_xpath)))
         sum_assured_input.clear()
-        sum_assured_input.send_keys(nhif_contributions)
+        sum_assured_input.send_keys(sum_assured)
 
 
         annual_premiums_paid_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.annual_premiums_paid_xpath)))
         annual_premiums_paid_input.clear()
-        annual_premiums_paid_input.send_keys(nhif_contributions)
+        annual_premiums_paid_input.send_keys(sum_assured)
+
+        add_policy = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.add_policy)))
+        add_policy.click()
+
+        sleep(5)
+        try:
+            alert = self.driver.switch_to.alert
+            print(f"Alert text: {alert.text}")
+            alert.accept()
+        except Exception as e:
+            print("Alert not found")
 
         # section T
         section_t = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.section_t_xpath)))
         section_t.click()
 
         pension_contributions_input = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.pension_contributions_input_xpath)))
-        pension_contributions_input.clear()
+        pension_contributions_input.send_keys(Keys.CONTROL, "a")
+        pension_contributions_input.send_keys(Keys.DELETE)
         pension_contributions_input.send_keys(pension_contributions)
 
-        sleep(100)
+
+        refund_due = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.refund_due_xpath))).get_attribute('value')
+
+        submit_tax = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.submit_tax_xpath)))
+        submit_tax.click()
+
+        sleep(5)
+        try:
+            alert = self.driver.switch_to.alert
+            print(f"Alert text: {alert.text}")
+            alert.accept()
+        except Exception as e:
+            print("Alert not found")
+
+        print("Tax filled sucessfully")
         self.take_screenshot()
+
+        return refund_due
 
 

@@ -50,6 +50,8 @@ def state_machine(channel, message,file=None):
             job_object["kra_pin"] = message["itax_pin"].upper()
         if "itax_password" in message:
             job_object["kra_password"] = message["itax_password"]
+        if "nhif_no" in message:
+            job_object["nhif_no"] = message["nhif_no"]
 
 
         if message['action'] == "1": #file tax with p9
@@ -198,9 +200,9 @@ def state_machine(channel, message,file=None):
             amount = job.expected_payment_amount
             msidn = "0"+message["text"][-9:]
 
-            stk_response = initiate_stkpush(amount=amount,
+            initiate_stkpush(amount=amount,
                                          msisdn=msidn,
-                                         reference = f"{job.id}_{job.channel_id}")
+                                         reference = f"{job.channel_id}")
 
             response = {
                 "message": ["Once paid, press continue to proceed.","If you dont receive an stk push, press resend STKpush button."],
@@ -211,6 +213,7 @@ def state_machine(channel, message,file=None):
                     {"id": "resend_stk_push", "label": "Resend STK push"}
                 ]}
             job.next_step = "CONFIRM_PAYMENT"
+            job.phone_number = msidn
             job.save()
 
         elif job.next_step == "UPLOAD_P9_FORM":
@@ -303,6 +306,7 @@ def state_machine(channel, message,file=None):
             option_choosen =  message["text"]
             if option_choosen == "continue_button":
                 #check if paid
+                #if True:
                 if job.expected_payment_amount == job.mpesa_paid_amount:
                     response = {
                         "message": ["Tax filing in progress, do not interrupt"],
@@ -329,6 +333,13 @@ def state_machine(channel, message,file=None):
                             {"id": "resend_stk_push", "label": "Resend STK push"}
                         ]}
             elif option_choosen == "resend_stk_push":
+                amount = job.expected_payment_amount
+                msidn = job.phone_number
+
+                initiate_stkpush(amount=amount,
+                                 msisdn=msidn,
+                                 reference=f"{job.channel_id}")
+
                 response = {
                     "message": ["STK push retriggered, press continue to proceed.",
                                 "If you dont receive an stk push, press resend STKpush button."],

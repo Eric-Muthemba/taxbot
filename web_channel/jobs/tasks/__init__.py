@@ -29,72 +29,77 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
         itax = Itax(itax_pin=kra_pin,
                     itax_password=kra_password,
                     task_id=channel_id,
-                    filing_date_from=job.date_to_file
-                    )
+                    filing_date_from=job.date_to_file )
         itax.load_itax_website()
-        itax.login_to_itax_website()
+        try:
+            itax.login_to_itax_website()
 
-
-        if not (itax.invalid_pin or itax.wrong_password or itax.is_blocked):
-            if operation == "check_if_tax_obligation_exists":
-                try:
-                    obligations_and_date_to_file = itax.get_obligations_and_date_to_file()
-                    job.has_tax_obligations = obligations_and_date_to_file["has_obligations"]
-                    job.date_to_file = obligations_and_date_to_file["tax_return_period_from"]
-                    job.save()
-                    if obligations_and_date_to_file["has_obligations"]:
-                        response["text"] = "has_obligations"
-                    response["expected_filing_period"] = obligations_and_date_to_file["tax_return_period_from"]
-                except Exception as e:
-                    print(e)
-
-                    response = {"id": channel_id, "is_start": False, "error": True,"text": "An error occured, kindly retry in a few."}
-
-            if operation == "file_nil_returns":
-                try:
-                    itax.navigate_to_file_nil_tax_page()
-                    job.screenshot_path = itax.screenshot_path
-                    job.is_filed = True
-                    job.save()
-                    response = {"id": channel_id, "is_start": False, "text": "Congraturations Nil Tax sucessfully filled", "error": False}
-                    send_email_with_multiple_attachments(recipient_email=job.email,
-                                                         path=itax.screenshot_path)
-                except Exception as e:
-                    print(e)
-                    response = {"id": channel_id, "is_start": False, "error": True}
-
-            elif operation == "file_p9_tax":
-                try:
-                    itax.navigate_to_filing_tax_page()
-                    itax.file_itr_tax( pension_contributions=job.pension_contributions,
-                                            tax_payer_nhif_pin=job.nhif_no,
-                                            nhif_contributions=job.nhif_contributions)
-
-                    if itax.error_detected:
-                        response = {"id": channel_id, "is_start": False, "error": True}
-                    else:
-                        response = {"id": channel_id, "is_start": False, "error": False, "text":"Congraturations Tax sucessfully filled"}
-                        job.screenshot_path = itax.screenshot_path
+            if not (itax.invalid_pin or itax.wrong_password or itax.is_blocked):
+                if operation == "check_if_tax_obligation_exists":
+                    try:
+                        obligations_and_date_to_file = itax.get_obligations_and_date_to_file()
+                        job.has_tax_obligations = obligations_and_date_to_file["has_obligations"]
+                        job.date_to_file = obligations_and_date_to_file["tax_return_period_from"]
                         job.save()
+                        if obligations_and_date_to_file["has_obligations"]:
+                            response["text"] = "has_obligations"
+                        response["expected_filing_period"] = obligations_and_date_to_file["tax_return_period_from"]
+                    except Exception as e:
+                        print(e)
+
+                        response = {"id": channel_id, "is_start": False, "error": True,"text": "An error occured, kindly retry in a few."}
+
+                if operation == "file_nil_returns":
+                    try:
+                        itax.navigate_to_file_nil_tax_page()
+                        job.screenshot_path = itax.screenshot_path
+                        job.is_filed = True
+                        job.save()
+                        response = {"id": channel_id, "is_start": False, "text": "Congraturations Nil Tax sucessfully filled", "error": False}
                         send_email_with_multiple_attachments(recipient_email=job.email,
                                                              path=itax.screenshot_path)
+                    except Exception as e:
+                        print(e)
+                        response = {"id": channel_id, "is_start": False, "error": True}
 
-                except Exception as e:
-                    print(e)
-                    response = {"id": channel_id, "is_start": False, "error": True}
+                elif operation == "file_p9_tax":
+                    try:
+                        itax.navigate_to_filing_tax_page()
+                        refund_due = itax.file_itr_tax( pension_contributions=job.pension_contributions,
+                                                       tax_payer_nhif_pin=job.nhif_no,
+                                                       nhif_contributions=job.nhif_contributions,
+                                                       phone_number=job.phone_number  )
 
-            itax.driver.close()
-        else:
-            if itax.is_blocked or itax.wrong_password:
-                response = {"id": channel_id,
-                            "is_start": False,
-                            "text": f"Error: {itax.error_text} <br>Correct the error above and retry.",
-                            "error": True}
-            if itax.invalid_pin:
-                response = {"id": channel_id,
-                            "is_start": False,
-                            "text": "Invalid PIN.",
-                            "error": True}
+                        if itax.error_detected:
+                            response = {"id": channel_id, "is_start": False, "error": True}
+                        else:
+                            response = {"id": channel_id, "is_start": False, "error": False, "text":f"Congraturations Tax sucessfully filled.<br>Refund due is : {refund_due}"}
+                            job.screenshot_path = itax.screenshot_path
+                            job.save()
+                            send_email_with_multiple_attachments(recipient_email=job.email,
+                                                                 path=itax.screenshot_path)
+
+                    except Exception as e:
+                        print(e)
+                        response = {"id": channel_id, "is_start": False, "error": True}
+
+                itax.driver.close()
+            else:
+                if itax.is_blocked or itax.wrong_password:
+                    response = {"id": channel_id,
+                                "is_start": False,
+                                "text": f"Error: {itax.error_text} <br>Correct the error above and retry.",
+                                "error": True}
+                if itax.invalid_pin:
+                    response = {"id": channel_id,
+                                "is_start": False,
+                                "text": "Invalid PIN.",
+                                "error": True}
+        except Exception as e:
+            {"id": channel_id,
+             "is_start": False,
+             "text": f"Error: We are currently experiencing a surge.Please try in a minute.",
+             "error": True}
 
     try:
         channel_layer = get_channel_layer()

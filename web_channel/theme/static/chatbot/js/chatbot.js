@@ -15,7 +15,10 @@ function validateEmail(email){
     );
 };
 function initializeWebSocket() {
-    chatSocket = new WebSocket('wss://' + window.location.host + '/ws/chat/?channel_id='+localStorage.getItem('conversation_id'));
+    let wsProtocol = (window.location.protocol === 'https:') ? 'wss://' : 'ws://';
+
+
+    chatSocket = new WebSocket(wsProtocol+ window.location.host + '/ws/chat/?channel_id='+localStorage.getItem('conversation_id'));
     chatSocket.onopen = function (event) {
         console.log('WebSocket is open now.');
         reconnectInterval = 1000;

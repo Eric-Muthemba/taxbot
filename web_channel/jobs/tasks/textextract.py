@@ -17,6 +17,7 @@ def extract_text_from_image(image_path):
         bytes_test = bytearray(img_test)
 
     response = client.detect_document_text(Document={'Bytes': bytes_test})
+    print(response)
     return response["Blocks"][1]["Text"]
 
 
