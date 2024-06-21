@@ -106,11 +106,11 @@ class pdf_extractor():
     def validator(self):
         print(self.response["totals"])
         try:
-            self.standard_data["pension_contributions_column_E2"] = self.response["totals"]["totals_E2"]
+            self.standard_data["pension_contributions_-column_E2"] = self.response["totals"]["totals_E2"]
         except:
             pass
         try:
-            self.standard_data["nhif_contributions"] = self.response["totals"]["totals_insurance_relief-K"]
+            self.standard_data["NHIF_contributions_-column_K2_(insurance_relief)"] = self.response["totals"]["totals_insurance_relief-K"]
         except:
             pass
 
