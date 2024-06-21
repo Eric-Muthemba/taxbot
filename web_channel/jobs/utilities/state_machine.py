@@ -159,6 +159,7 @@ def state_machine(channel, message,file=None):
                itax.delay(operation="check_if_tax_obligation_exists",channel=channel, channel_id=message["id"])
 
         elif job.next_step == "VERIFYING_IF_YOU_HAVE_TAX_OBLIGATIONS":
+            print(message)
             if message["error"]:
                 response = {
                     "message": [message["text"]],
