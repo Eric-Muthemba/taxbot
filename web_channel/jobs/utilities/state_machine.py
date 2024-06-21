@@ -88,7 +88,7 @@ def state_machine(channel, message,file=None):
                             "has_table": False,
                             "keyboard_type": None}
             else:
-                response_text ="<br>".join([f"{idx+1}.) PIN: {existing_job.kra_pin}, Filed on:{existing_job.date_added}, Filing status: {"Filed" if existing_job.is_filed else "Pending"}"  for idx,existing_job in enumerate(existing_jobs)])
+                response_text ="<br>".join([f"{idx+1}.) PIN: {existing_job.kra_pin}, Filed on:{existing_job.date_added}, Filing status: {'Filed' if existing_job.is_filed else 'Pending'}"  for idx,existing_job in enumerate(existing_jobs)])
 
 
                 response = {"message": ["Here are your current paid active tax filings.<br><br>"+response_text],
