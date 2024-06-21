@@ -75,7 +75,7 @@ function initializeWebSocket() {
                     itax_password:itax_password,
                     nhif_no:nhif_no
                 }
-                display_message  =  `Action : `+option.options[option.selectedIndex].text+`<br>Email : `+email+`<br>Itax pin : `+itax_pin+`<br>Itax Password : ******** <br>NHIF number : `+nhif_no+`<br>`
+                display_message  =  `Action : `+option.options[option.selectedIndex].text+`<br>Email : `+email+`<br>KRA pin : `+itax_pin+`<br>Itax password : ******** <br>NHIF number : `+nhif_no+`<br>`
 
                 break;
             case '2':
@@ -99,7 +99,7 @@ function initializeWebSocket() {
                     itax_pin:itax_pin,
                     itax_password:itax_password
                             }
-                display_message  =  `Action : `+option.options[option.selectedIndex].text+`<br>Email : `+email+`<br>Itax pin : `+itax_pin+`<br>Itax Password : ******** <br>`
+                display_message  =  `Action : `+option.options[option.selectedIndex].text+`<br>Email : `+email+`<br>KRA pin : `+itax_pin+`<br>Itax password : ******** <br>`
               break;
             case '3':
                 if (!validateEmail(email)) {
