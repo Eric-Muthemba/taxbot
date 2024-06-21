@@ -6,12 +6,10 @@ from selenium.webdriver.common.by import By
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from .textextract import extract_text_from_image
-
 from PIL import Image
 import string
 import io
 import os
-import cv2
 from time import sleep
 
 
