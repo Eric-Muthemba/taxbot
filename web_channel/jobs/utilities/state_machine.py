@@ -157,7 +157,7 @@ def state_machine(channel, message,file=None):
                 if job.action == "1":
 
                     response = {
-                        "message": [f"You are expected to file your taxes of the duration from {message["expected_filing_period"]}<br><br> "\
+                        "message": [f"You are expected to file your taxes of the duration from {message['expected_filing_period']}<br><br> "\
                                     "Great,I have verified that you have no tax obligations<br><br>"\
                                     "Kindly upload the pdf version of your P9 form"],
                         "has_table": False,
