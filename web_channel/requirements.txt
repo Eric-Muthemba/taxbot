@@ -83,3 +83,4 @@ whitenoise==5.2.0
 wsproto==1.2.0
 zope.interface==6.4.post2
 boto3
+chromedriver_autoinstaller
