@@ -254,7 +254,7 @@ def state_machine(channel, message,file=None):
 
             job.next_step = "VALIDATE_P9_DATA"
             job.tax_document_extracted_info = extracted_data
-            job.pension_contributions = standard_data['pension_contributions_column_E2']
+            job.pension_contributions = standard_data['Pension_contributions_column_E2']
             job.nhif_contributions = standard_data['NHIF_contributions_column_K2_insurance_relief']
             job.save()
 
