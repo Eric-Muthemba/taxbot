@@ -146,7 +146,7 @@ class Itax(object):
         image = Image.open(io.BytesIO(screenshot))
 
         location = {"x": 400, "y": 700}
-        location = {"x": 600, "y": 700}
+        #location = {"x": 600, "y": 700}
         size = {"width": 200, "height": 100}
         
         # Define the coordinates for cropping
