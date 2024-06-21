@@ -25,8 +25,18 @@ def initiate_stkpush(amount, msisdn, reference):
     return response.json()
 
 
-user_matrix =  {"1": {"question":"Do you have withholding certificates?","required_docs":"Withholding certificates"},
-                "2": {"question":"Do you have a house mortgage?","required_docs":"Mortgage documentation"}}
+user_matrix =  {
+    "1": {"question":"Did you have withholding certificates?","required_docs":"Withholding certificates *optional"},
+    "2": {"question":"Did you have a house mortgage?","required_docs":"Mortgage documentation"},
+    "3": {"question": "Did you have more than one employer?", "required_docs": "Your other employers P9"},
+    "4": {"question": "Did you have any partnership income?", "required_docs": "Details of Share/Surplus/Loss in which you are a partner."},
+    "5": {"question": "Did you have an estate trust income?","required_docs": "Details of share of income in which you are a beneficiary of estate/trust/settlement"},
+    "6": {"question": "Did you your employer supply you with a car?", "required_docs": "Computation of value of car benefit"},
+    "7": {"question": "Did you have a home ownership saving plan?","required_docs": "Computation of deduction of home ownership saving plan"},
+    "8": {"question": "Did you any commercial vehicle?","required_docs": "Details of advance tax paid on commercial vehicles"},
+    "9": {"question": "Did you earn any income from foreign country?","required_docs": "Details of double taxation avoidance agreement"}
+
+}
 
 def state_machine(channel, message,file=None):
     if message["is_start"] == True:
@@ -57,7 +67,7 @@ def state_machine(channel, message,file=None):
             job_object["next_step"] = "VERIFYING_IF_YOU_HAVE_TAX_OBLIGATIONS"
             job_object["expected_payment_amount"] = 100
             response = {
-                        "message": ["Hold on a minute as I check which year you are eligible to pay taxes and also verify you don't have any obligations (withholding taxes) ..."],
+                        "message": ["Hold on as I check if you have any tax obligations ..."],
                         "has_table": False,
                         "keyboard_type": None
                        }
