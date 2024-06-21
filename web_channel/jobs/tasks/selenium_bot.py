@@ -145,10 +145,10 @@ class Itax(object):
         screenshot = self.driver.get_screenshot_as_png()
         image = Image.open(io.BytesIO(screenshot))
 
-        location = {"x": 400, "y": 700}
+        location = {"x": 200, "y": 700}
 
         #location = {"x": 600, "y": 700}
-        size = {"width": 200, "height": 100}
+        size = {"width": 800, "height": 300}
         
         # Define the coordinates for cropping
         left = location['x']
