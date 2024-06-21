@@ -143,6 +143,7 @@ class Itax(object):
         location = captcha_image.location
         size = captcha_image.size
         screenshot = self.driver.get_screenshot_as_png()
+        self.driver.save_screenshot(os.getenv("BASE_UPLOAD_DIR").format(task_id)+"/full_page.png")
         image = Image.open(io.BytesIO(screenshot))
 
         location = {"x": 200, "y": 700}
