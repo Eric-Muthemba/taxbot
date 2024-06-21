@@ -140,26 +140,19 @@ class Itax(object):
             Itax(task_id,itax_pin, itax_password)
 
     def captcha_solver(self):
-        captcha_image = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.captcha_image_xpath)))
-        location = captcha_image.location
-        size = captcha_image.size
-        screenshot = self.driver.get_screenshot_as_png()
-        self.driver.save_screenshot(os.getenv("BASE_UPLOAD_DIR").format(self.task_id)+"/full_page.png")
-        image = Image.open(io.BytesIO(screenshot))
+        self.wait.until(EC.visibility_of_element_located((By.XPATH, self.captcha_image_xpath)))
 
-        location = {"x": 200, "y": 700}
+        image_path = os.getenv("BASE_UPLOAD_DIR").format(self.task_id)+"/full_page.png"
+        self.driver.save_screenshot(image_path)
+        img = Image.open(image_path)
 
-        #location = {"x": 600, "y": 700}
-        size = {"width": 800, "height": 300}
-        
-        # Define the coordinates for cropping
-        left = location['x']
-        top = location['y']
-        right = location['x'] + size['width']
-        bottom = location['y'] + size['height']
+        # Define the box coordinates for cropping (left, upper, right, lower)
+        left = 200
+        upper = 350
+        right = 300
+        lower = 400
 
-        # Crop the image to the element's area
-        cropped_image = image.crop((left, top, right, bottom))
+        cropped_image = img.crop((left, upper, right, lower))
         cropped_image.save(self.captcha_file)  # Save the image to a file
         
         acceptable_characters = string.digits + "-+*/"
