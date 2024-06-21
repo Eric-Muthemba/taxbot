@@ -359,7 +359,7 @@ function SetBotResponse(data,is_invalid_file_input=false){
                     }
                     SetUserInput(message={id:localStorage.getItem('conversation_id'),is_start:false,data:message},
                                    is_file=false,
-                           display_message="Submited")
+                           display_message="Submitted")
                 }
                 else if (data.buttons[i].id == "validate"){
                     var p9_validated_data = document.getElementsByClassName(data.table_id+`_inputs`);

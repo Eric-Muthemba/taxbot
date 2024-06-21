@@ -148,14 +148,13 @@ def state_machine(channel, message,file=None):
 
             else:
                response =  {
-                                "message": ["Verifying you don't have any obligations ..."],
+                                "message": ["Verifying you don't have any witholding tax obligations ..."],
                                 "has_table": False,
                                 "keyboard_type": None
                             }
                job.next_step ="VERIFYING_IF_YOU_HAVE_TAX_OBLIGATIONS"
                job.save()
                itax.delay(operation="check_if_tax_obligation_exists",channel=channel, channel_id=message["id"])
-
 
         elif job.next_step == "VERIFYING_IF_YOU_HAVE_TAX_OBLIGATIONS":
             if message["error"]:
@@ -166,11 +165,11 @@ def state_machine(channel, message,file=None):
                 }
             elif message["text"] == "no_obligations":
                 if job.action == "1":
-
+                    year_of_filing = message['expected_filing_period'].split("/")[-1]
                     response = {
-                        "message": [f"You are expected to file your taxes of the duration from {message['expected_filing_period']}<br><br> "\
-                                    "Great,I have verified that you have no tax obligations<br><br>"\
-                                    "Kindly upload the pdf version of your P9 form"],
+                        "message": [f"Great,I have verified that you have no witholding tax obligations for {year_of_filing}.<br><br>"\
+                                    f"You are expected to file your taxes of the year {year_of_filing}.<br><br> "\
+                                    f"Kindly upload the pdf version of your P9 form, for the year {year_of_filing}"],
                         "has_table": False,
                         "keyboard_type": "upload"
                     }
