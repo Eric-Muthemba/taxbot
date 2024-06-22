@@ -8,11 +8,9 @@ window.onload = function (){
 }
 
 var agree_to_terms = document.getElementById('agreeToTerms');
-checkbox.addEventListener('change', function() {
-        if(!this.checked){
+agree_to_terms.addEventListener('change', function() {
             var start_button = document.getElementById('start_filing');
-            start_button.disabled = true;
-        }
+            start_button.disabled = !this.checked;
         });
 
 
