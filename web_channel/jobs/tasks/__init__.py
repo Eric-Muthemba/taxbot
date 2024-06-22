@@ -37,27 +37,26 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
             if not (itax.invalid_pin or itax.wrong_password or itax.is_blocked):
                 if operation == "check_if_tax_obligation_exists":
                     try:
-                        obligations_and_date_to_file = itax.get_obligations_and_date_to_file()
-                        if not (itax.error_detected and itax.already_filed and not itax.havent_filed_in_a_while):
-                            job.has_tax_obligations = obligations_and_date_to_file["has_obligations"]
-                            job.date_to_file = obligations_and_date_to_file["tax_return_period_from"]
+                        itax.get_obligations_and_date_to_file()
+
+
+                        if not (itax.error_detected and itax.already_filed and itax.havent_filed_in_a_while):
+                            job.has_tax_obligations = itax.has_obligations
+                            job.date_to_file = itax.tax_return_period_from
                             job.save()
-                            if obligations_and_date_to_file["has_obligations"]:
+                            if  itax.has_obligations:
                                 response["text"] = "has_obligations"
                             if itax.already_filed:
                                 response["text"] = "already_filed"
+                            if itax.havent_filed_in_a_while:
+                                response["text"] = "havent_filed_in_a_while"
 
-                            response["expected_filing_period"] = obligations_and_date_to_file["tax_return_period_from"]
+                            response["expected_filing_period"] = itax.tax_return_period_from
                         elif itax.already_filed:
                             response = {"id": channel_id,
                                         "is_start": False,
                                         "error": True,
                                         "text": " Original Return is already filed for this period."}
-                        elif itax.havent_filed_in_a_while:
-                            response = {"id": channel_id,
-                                        "is_start": False,
-                                        "error": False,
-                                        "text": "havent_filed_in_a_while"}
 
                         else:
                             response = {"id": channel_id, "is_start": False, "error": True,

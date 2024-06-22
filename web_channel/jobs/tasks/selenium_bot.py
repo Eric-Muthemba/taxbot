@@ -310,20 +310,17 @@ class Itax(object):
                 self.havent_filed_in_a_while = True
             else:
                 self.has_obligations = True
-                return {"tax_return_period_from": "01/01/2023",
-                        "has_obligations": self.has_obligations}
+
         except Exception as e:
             print("Alert not found")
 
         try:
-            tax_return_period_from = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.tax_return_period_from_xpath))).get_attribute('value')
-            print("tax_return_period_from")
-            print(tax_return_period_from)
-            self.filing_date = tax_return_period_from
+            self.tax_return_period_from = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.tax_return_period_from_xpath))).get_attribute('value')
 
             if self.filing_date.strip() == "":
-                tax_return_period_from = "01/01/2023"
-                self.filing_date = tax_return_period_from
+                self.tax_return_period_from = "01/01/2023"
+
+            self.filing_date = self.tax_return_period_from
 
 
             # check if obligations
@@ -338,7 +335,7 @@ class Itax(object):
 
             try:
                 itr_page_returns_date_input = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_date_xpath)))
-                itr_page_returns_date_input.send_keys(tax_return_period_from)
+                itr_page_returns_date_input.send_keys(self.tax_return_period_from)
             except Exception as e:
                 self.driver.execute_script(f"""
                                                 var el =document.getElementById('txtPeriodFromITR');
@@ -390,10 +387,6 @@ class Itax(object):
                     self.error_detected = True
             except Exception as e:
                 self.error_detected = True
-
-        return {"tax_return_period_from":tax_return_period_from,
-                "has_obligations":self.has_obligations}
-
 
     def navigate_to_filing_tax_page(self,number_of_recursion=0):
         main_returns_page_button = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.main_returns_page_button_xpath)))
