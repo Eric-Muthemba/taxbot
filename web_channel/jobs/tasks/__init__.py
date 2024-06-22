@@ -38,7 +38,7 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
                 if operation == "check_if_tax_obligation_exists":
                     try:
                         obligations_and_date_to_file = itax.get_obligations_and_date_to_file()
-                        if not (itax.error_detected and itax.already_filed and itax.havent_filed_in_a_while):
+                        if not (itax.error_detected and itax.already_filed and not itax.havent_filed_in_a_while):
                             job.has_tax_obligations = obligations_and_date_to_file["has_obligations"]
                             job.date_to_file = obligations_and_date_to_file["tax_return_period_from"]
                             job.save()
@@ -57,7 +57,7 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
                             response = {"id": channel_id,
                                         "is_start": False,
                                         "error": False,
-                                        "text": "haven't filed in a while"}
+                                        "text": "havent_filed_in_a_while"}
 
                         else:
                             response = {"id": channel_id, "is_start": False, "error": True,
