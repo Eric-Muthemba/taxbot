@@ -174,6 +174,8 @@ def state_machine(channel, message,file=None):
                             "keyboard_type": "normal"}
 
                 job.next_step = "GET_PHONE_NUMBER"
+                job.is_manual = True
+                job.expected_payment_amount = 1500
                 job.save()
             elif message["text"] == "no_obligations":
                 if job.action == "1":
