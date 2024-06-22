@@ -166,7 +166,7 @@ def state_machine(channel, message,file=None):
                     "has_table": False,
                     "keyboard_type": None
                 }
-            elif message["action"] == "haven't filed in a while":
+            elif message["text"] == "haven't filed in a while":
                 response = {"message": ["It looks like you haven't filed your taxes for multiple years.<br><br>" \
                                         "Redirecting you to our live human agent<br><br>" \
                                         "To proceed, kindly input your valid phone number to pay KES 1500.00 to proceed."],
