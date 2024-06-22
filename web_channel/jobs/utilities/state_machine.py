@@ -187,7 +187,7 @@ def state_machine(channel, message,file=None):
                     job.save()
             elif message["text"] == "has_obligations":
                 response = {
-                    "message": ["It looks like you have some tax obligations. Redirecting you to our live human agent. <br>Kindly upload the following documents:<br>" + "<br>1.) P9 form <br>2.)Any other relevant document"],
+                    "message": ["It looks like you have some tax obligations. Redirecting you to our live human agent. <br>Kindly upload the following documents:<br>" + "<br>1.) Witholding tax certificate(s) form <br>2.) Any other relevant document"],
                     "has_table": False,
                     "keyboard_type": "multi_upload"
                 }
@@ -195,6 +195,15 @@ def state_machine(channel, message,file=None):
                 job.is_manual = True
                 job.expected_payment_amount = 1500
                 job.save()
+            elif message["text"] == "already_filed":
+                response = {
+                    "message": [ "You have Already filed your taxes."],
+                    "has_table": False,
+                    "keyboard_type": None
+                }
+                job.next_step = "ALREADY_FILED"
+                job.save()
+
 
         elif job.next_step == "GET_PHONE_NUMBER":
             #push stk push

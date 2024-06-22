@@ -62,12 +62,25 @@ services:
     restart: on-failure
     container_name: "TaxBotKECRMWorker"
     command: >
-      sh -c "export READ_DOT_ENV_FILE=True && celery -A app worker --loglevel=INFO"
+      sh -c "export READ_DOT_ENV_FILE=True && celery -A app worker --loglevel=INFO  --concurrency=4"
     depends_on:
       - TaxBotKECRM
       - rabbit
     volumes:
       - ./web_channel/:/app
+
+  TaxBotKECRMWorker2:
+    image: tax_bot_ke_crm:latest
+    restart: on-failure
+    container_name: "TaxBotKECRMWorker"
+    command: >
+      sh -c "export READ_DOT_ENV_FILE=True && celery -A app worker --loglevel=INFO  --concurrency=4"
+    depends_on:
+      - TaxBotKECRM
+      - rabbit
+    volumes:
+      - ./web_channel/:/app
+
 
 volumes:
   redis_data:

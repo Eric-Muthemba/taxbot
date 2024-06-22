@@ -43,6 +43,9 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
                         job.save()
                         if obligations_and_date_to_file["has_obligations"]:
                             response["text"] = "has_obligations"
+                        if itax.already_filed:
+                            response["text"] = "already_filed"
+
                         response["expected_filing_period"] = obligations_and_date_to_file["tax_return_period_from"]
                     except Exception as e:
                         print(e)

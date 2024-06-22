@@ -113,6 +113,7 @@ class Itax(object):
         self.error_detected = False
         self.error_text = ""
         self.has_obligations = False
+        self.already_filed = False
         self.invalid_pin = False
         self.is_blocked = False
 
@@ -291,18 +292,22 @@ class Itax(object):
 
         try:
             alert = self.driver.switch_to.alert
-            print("found alert")
-            print(f"Alert text: {alert.text}")
+            alert_text = alert.text
+            print(f"Alert text: {alert_text}")
             alert.accept()
-
-            if "You have already filed the Original Return" in alert.text:
+            if "You have already filed the Original Return" in alert_text:
                 self.has_obligations = False
+                self.already_filed = True
             else:
                 self.has_obligations = True
+                return {"tax_return_period_from": "01/01/2023",
+                        "has_obligations": self.has_obligations}
         except Exception as e:
             print("Alert not found")
 
         tax_return_period_from = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.tax_return_period_from_xpath))).get_attribute('value')
+        print("tax_return_period_from")
+        print(tax_return_period_from)
         self.filing_date = tax_return_period_from
 
         if self.filing_date.strip() == "":
@@ -324,9 +329,6 @@ class Itax(object):
             itr_page_returns_date_input = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_date_xpath)))
             itr_page_returns_date_input.send_keys(tax_return_period_from)
         except Exception as e:
-            print(self.filing_date)
-
-
             self.driver.execute_script(f"""
                                             var el =document.getElementById('txtPeriodFromITR');
                                             el.value = '{self.filing_date}';
@@ -336,32 +338,36 @@ class Itax(object):
         itr_page_returns_end_date = self.wait.until(
             EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_end_date_xpath)))
         itr_page_returns_end_date.click()
-        sleep(3)
-
 
         itr_page_returns_have_employment_radio_button = self.wait.until(
             EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_have_employment_radio_button_xpath)))
         itr_page_returns_have_employment_radio_button.click()
         self.driver.execute_script("document.getElementById('btnSubmitITR').disabled = false;")
-        sleep(3)
+
         self.driver.execute_script("document.getElementById('btnSubmitITR').click();")
-        sleep(3)
+        sleep(5)
         try:
             alert = self.driver.switch_to.alert
             print("found alert")
+            alert_text = alert.text
             # Print alert text (optional)
-            print(f"Alert text: {alert.text}")
+            print(f"Alert text: {alert_text}")
+
             alert.accept()
 
-            if "You have already filed the Original Return" in alert.text:
+
+            if "You have already filed the Original Return" in alert_text:
                 self.has_obligations = False
+                self.already_filed = True
             else:
                 self.has_obligations = True
+
         except Exception as e:
             print("Alert not found")
 
 
-
+        print({"tax_return_period_from":tax_return_period_from,
+                "has_obligations":self.has_obligations})
 
         return {"tax_return_period_from":tax_return_period_from,
                 "has_obligations":self.has_obligations}
@@ -395,20 +401,16 @@ class Itax(object):
             alert = self.driver.switch_to.alert
             print("found alert")
             # Print alert text (optional)
-            print(f"Alert text: {alert.text}")
+            alert_text = alert.text
+
+            print(f"Alert text: {alert_text}")
             alert.accept()
-            if "You have already filed the Original Return" in alert.text:
+            if "You have already filed the Original Return" in alert_text:
                 self.has_obligations = False
             else:
                 self.has_obligations = True
         except Exception as e:
             has_error = False
-
-            '''try:
-                self.driver.page_source.find("Error")
-                has_error = True
-            except:
-                has_error = False'''
             print(has_error)
             #save to batch process
             if has_error:
