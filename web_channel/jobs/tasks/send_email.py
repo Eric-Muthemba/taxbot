@@ -15,7 +15,7 @@ def send_email_with_multiple_attachments(recipient_email, path):
     password = 'TaxB0tK3SupP0rT'  # Replace with your email account password
 
     # Email content
-    subject = "Your tax has been filed succefully!!!."
+    subject = "Your tax has been filed successfully!!!."
     body = 'Thanks_for_filing your taxes with TaxbotKE. Attached is a picture evidence of filing.'
 
     # Create MIME object
