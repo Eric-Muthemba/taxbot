@@ -505,9 +505,11 @@ function showInputs() {
     var itax_password = document.getElementById('itax_password');
     var nhif_no = document.getElementById('nhif_no');
     var start_button = document.getElementById('start_filing');
+    var agree_to_terms = document.getElementById('agreeToTerms');
 
 
-    start_button.disabled = false;
+    start_button.disabled = !agree_to_terms.checked;
+
 
     // Create inputs based on selected option
     switch(option) {
