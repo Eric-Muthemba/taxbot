@@ -23,7 +23,8 @@ class Itax(object):
         self.password_input_xpath = "//*[@id=\"xxZTT9p2wQ\"]"
         self.continue_button_xpath = "//*[@id=\"normalDiv\"]/table/tbody/tr[3]/td[2]/a"
         self.login_error_xpath = '/html/body/div[3]/div[3]/table/tbody/tr/td/div/form/table/tbody/tr[1]/td[1]/table/tbody/tr[3]/td/div[2]/table[1]/tbody/tr/td'
-
+        self.accept_data_privacy_terms_xpath = '//*[@id="chkDataPriv"]'
+        self.submit_button_to_data_privacy_terms_xpath = '/html/body/div[2]/div[4]/table/tbody/tr/td/div/div/div/div/div[2]/div[6]/a'
 
         self.captcha_image_xpath = "//*[@id=\"captcha_img\"]"
         self.captcha_input_xpath = "//*[@id=\"captcahText\"]"
@@ -219,15 +220,19 @@ class Itax(object):
                     self.wrong_password = True
                     self.error_text = error_box.text
                 except:
-                    try:
-                        #wrong arithmetic
-                        error_box = self.wait.until(element_located((By.XPATH, self.wrong_arithmetic_xpath)))
-                        print(error_box)
-                        sleep(5)
+                     pass
 
-                        self.login_to_itax_website()
-                    except Exception as e:
-                        pass
+                sleep(5)
+                try:
+                    accept_data_privacy_terms = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.accept_data_privacy_terms_xpath)))
+                    accept_data_privacy_terms.click()
+
+                    submit_button_to_data_privacy_terms = self.wait.until(EC.visibility_of_element_located((By.XPATH, self.submit_button_to_data_privacy_terms_xpath)))
+                    submit_button_to_data_privacy_terms.click()
+                except Exception as e:
+                    print(e)
+                    print("No terms")
+                    pass
 
 
     def navigate_to_file_nil_tax_page(self,number_of_recursion=0):
@@ -297,7 +302,9 @@ class Itax(object):
             alert.accept()
             if "You have already filed the Original Return" in alert_text:
                 self.has_obligations = False
+            elif "can be filed after" in alert_text:
                 self.already_filed = True
+                self.has_obligations = False
             else:
                 self.has_obligations = True
                 return {"tax_return_period_from": "01/01/2023",
@@ -305,69 +312,80 @@ class Itax(object):
         except Exception as e:
             print("Alert not found")
 
-        tax_return_period_from = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.tax_return_period_from_xpath))).get_attribute('value')
-        print("tax_return_period_from")
-        print(tax_return_period_from)
-        self.filing_date = tax_return_period_from
-
-        if self.filing_date.strip() == "":
-            tax_return_period_from = "01/01/2023"
+        try:
+            tax_return_period_from = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.tax_return_period_from_xpath))).get_attribute('value')
+            print("tax_return_period_from")
+            print(tax_return_period_from)
             self.filing_date = tax_return_period_from
 
-
-        # check if obligations
-        main_returns_page_button = self.wait.until(
-            EC.visibility_of_element_located((By.XPATH, self.main_returns_page_button_xpath)))
-        hover = ActionChains(self.driver).move_to_element(main_returns_page_button)
-        hover.perform()
-
-        sub_returns_page_button = self.wait.until(
-            EC.visibility_of_element_located((By.XPATH, self.itr_employment_xpath)))
-        sub_returns_page_button.click()
-
-        try:
-            itr_page_returns_date_input = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_date_xpath)))
-            itr_page_returns_date_input.send_keys(tax_return_period_from)
-        except Exception as e:
-            self.driver.execute_script(f"""
-                                            var el =document.getElementById('txtPeriodFromITR');
-                                            el.value = '{self.filing_date}';
-                                            el.dispatchEvent(new Event("change"));
-                                       """)
-
-        itr_page_returns_end_date = self.wait.until(
-            EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_end_date_xpath)))
-        itr_page_returns_end_date.click()
-
-        itr_page_returns_have_employment_radio_button = self.wait.until(
-            EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_have_employment_radio_button_xpath)))
-        itr_page_returns_have_employment_radio_button.click()
-        self.driver.execute_script("document.getElementById('btnSubmitITR').disabled = false;")
-
-        self.driver.execute_script("document.getElementById('btnSubmitITR').click();")
-        sleep(5)
-        try:
-            alert = self.driver.switch_to.alert
-            print("found alert")
-            alert_text = alert.text
-            # Print alert text (optional)
-            print(f"Alert text: {alert_text}")
-
-            alert.accept()
+            if self.filing_date.strip() == "":
+                tax_return_period_from = "01/01/2023"
+                self.filing_date = tax_return_period_from
 
 
-            if "You have already filed the Original Return" in alert_text:
-                self.has_obligations = False
-                self.already_filed = True
-            else:
-                self.has_obligations = True
+            # check if obligations
+            main_returns_page_button = self.wait.until(
+                EC.visibility_of_element_located((By.XPATH, self.main_returns_page_button_xpath)))
+            hover = ActionChains(self.driver).move_to_element(main_returns_page_button)
+            hover.perform()
 
-        except Exception as e:
-            print("Alert not found")
+            sub_returns_page_button = self.wait.until(
+                EC.visibility_of_element_located((By.XPATH, self.itr_employment_xpath)))
+            sub_returns_page_button.click()
 
+            try:
+                itr_page_returns_date_input = self.wait.until( EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_date_xpath)))
+                itr_page_returns_date_input.send_keys(tax_return_period_from)
+            except Exception as e:
+                self.driver.execute_script(f"""
+                                                var el =document.getElementById('txtPeriodFromITR');
+                                                el.value = '{self.filing_date}';
+                                                el.dispatchEvent(new Event("change"));
+                                           """)
 
-        print({"tax_return_period_from":tax_return_period_from,
-                "has_obligations":self.has_obligations})
+            itr_page_returns_end_date = self.wait.until(
+                EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_end_date_xpath)))
+            itr_page_returns_end_date.click()
+
+            itr_page_returns_have_employment_radio_button = self.wait.until(
+                EC.visibility_of_element_located((By.XPATH, self.itr_page_returns_have_employment_radio_button_xpath)))
+            itr_page_returns_have_employment_radio_button.click()
+            self.driver.execute_script("document.getElementById('btnSubmitITR').disabled = false;")
+
+            self.driver.execute_script("document.getElementById('btnSubmitITR').click();")
+            sleep(5)
+            try:
+                alert = self.driver.switch_to.alert
+                print("found alert")
+                alert_text = alert.text
+                # Print alert text (optional)
+                print(f"Alert text: {alert_text}")
+
+                alert.accept()
+
+                if "already filed" in alert_text:
+                    self.has_obligations = False
+                    self.already_filed = True
+                else:
+                    self.has_obligations = True
+
+            except Exception as e:
+                print("Alert not found")
+
+        except:
+            try:
+                alert = self.driver.switch_to.alert
+                print("found alert")
+                alert_text = alert.text
+                # Print alert text (optional)
+                print(f"Alert text: {alert_text}")
+                alert.accept()
+                if "already filed" in alert_text:
+                    self.already_filed = True
+                else:
+                    self.error_detected = True
+            except Exception as e:
+                self.error_detected = True
 
         return {"tax_return_period_from":tax_return_period_from,
                 "has_obligations":self.has_obligations}

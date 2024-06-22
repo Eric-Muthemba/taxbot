@@ -38,15 +38,25 @@ def itax(operation=None,action=None,channel=None,channel_id=None):
                 if operation == "check_if_tax_obligation_exists":
                     try:
                         obligations_and_date_to_file = itax.get_obligations_and_date_to_file()
-                        job.has_tax_obligations = obligations_and_date_to_file["has_obligations"]
-                        job.date_to_file = obligations_and_date_to_file["tax_return_period_from"]
-                        job.save()
-                        if obligations_and_date_to_file["has_obligations"]:
-                            response["text"] = "has_obligations"
-                        if itax.already_filed:
-                            response["text"] = "already_filed"
+                        if not (itax.error_detected and itax.already_filed):
+                            job.has_tax_obligations = obligations_and_date_to_file["has_obligations"]
+                            job.date_to_file = obligations_and_date_to_file["tax_return_period_from"]
+                            job.save()
+                            if obligations_and_date_to_file["has_obligations"]:
+                                response["text"] = "has_obligations"
+                            if itax.already_filed:
+                                response["text"] = "already_filed"
 
-                        response["expected_filing_period"] = obligations_and_date_to_file["tax_return_period_from"]
+                            response["expected_filing_period"] = obligations_and_date_to_file["tax_return_period_from"]
+                        elif itax.already_filed:
+                            response = {"id": channel_id,
+                                        "is_start": False,
+                                        "error": True,
+                                        "text": " Original Return is already filed for this period."}
+                        else:
+                            response = {"id": channel_id, "is_start": False, "error": True,
+                                        "text": "An error occured, kindly retry in a few."}
+
                     except Exception as e:
                         print(e)
 
