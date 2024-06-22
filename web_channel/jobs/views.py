@@ -95,6 +95,12 @@ class Chatbot2PageView(generic.TemplateView):
     def dispatch(self, request, *args, **kwargs):
             return super().dispatch(request, *args, **kwargs)
 
+class ChatbotTermsAndConditionsView(generic.TemplateView):
+    template_name = "terms_and_conditions.html"
+
+    def dispatch(self, request, *args, **kwargs):
+            return super().dispatch(request, *args, **kwargs)
+
 class MpesaCallback(generics.CreateAPIView):
     serializer_class = ConversationSerializer
     def create(self, request, *args, **kwargs):

@@ -7,6 +7,17 @@ window.onload = function (){
     showInputs();
 }
 
+var agree_to_terms = document.getElementById('agreeToTerms');
+checkbox.addEventListener('change', function() {
+        if(!this.checked){
+            var start_button = document.getElementById('start_filing');
+            start_button.disabled = true;
+        }
+        });
+
+
+
+
 function validateEmail(email){
   return String(email)
     .toLowerCase()
