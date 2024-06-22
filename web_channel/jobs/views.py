@@ -99,6 +99,7 @@ class MpesaCallback(generics.CreateAPIView):
     serializer_class = ConversationSerializer
     def create(self, request, *args, **kwargs):
         data = request.data
+        print(data)
 
         if data["Body"]["stkCallback"]["ResultCode"] == 0:
             reference = data["Body"]["stkCallback"]["ExternalReference"]
