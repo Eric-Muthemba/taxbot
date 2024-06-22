@@ -14,14 +14,6 @@ import os
 from time import sleep
 
 
-#import chromedriver_autoinstaller
-
-#chromedriver_autoinstaller.install()  # Check if the current version of chromedriver exists
-
-
-# and if it doesn't exist, download it automatically,
-
-
 class Itax(object):
     def __init__(self,task_id,itax_pin, itax_password,filing_date_from):
 
@@ -135,14 +127,27 @@ class Itax(object):
         self.selected_type_of_tax_obligation_options = "2"
         self.selected_type_of_tax_return_options = "Original"
 
-
         options = Options()
-        options.binary_location = "/usr/bin/chromedriver/"
+
+        if os.getenv("LOCAL"):
+            import chromedriver_autoinstaller
+            chromedriver_autoinstaller.install()
+            self.left = 600
+            self.upper = 700
+            self.right = 800
+            self.lower = 800
+        else:
+            options.binary_location = "/usr/bin/chromedriver/"
+            options.add_argument("--headless=new")
+            self.left = 200
+            self.upper = 350
+            self.right = 300
+            self.lower = 400
+
         options.add_argument('--disable-gpu')
         options.add_argument('--no-sandbox')
         options.add_argument('--disable-dev-shm-usage')
         options.add_argument('--remote-debugging-pipe')
-        options.add_argument("--headless=new")
         try:
             self.driver = webdriver.Chrome(options=options)
             self.wait = WebDriverWait(self.driver, 10)
@@ -157,18 +162,7 @@ class Itax(object):
         self.driver.save_screenshot(image_path)
         img = Image.open(image_path)
 
-        # Define the box coordinates for cropping (left, upper, right, lower)
-        left = 200
-        upper = 350
-        right = 300
-        lower = 400
-
-        '''left = 600
-        upper = 700
-        right = 800
-        lower = 800'''
-
-        cropped_image = img.crop((left, upper, right, lower))
+        cropped_image = img.crop((self.left, self.upper, self.right, self.lower))
         cropped_image.save(self.captcha_file)  # Save the image to a file
         
         acceptable_characters = string.digits + "-+*/"

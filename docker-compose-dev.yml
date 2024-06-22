@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+
+  TaxBotKERedis:
+    container_name: 'TaxBotKERedis'
+    image: redis:latest
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  TaxBotKEDB:
+    container_name: 'TaxBotKEDB'
+    image: postgres:15.2-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_PORT=5432
+    ports:
+      - "5440:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data/
+  TaxBotKERedisCommander:
+    container_name: 'TaxBotKERedisCommander'
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=local:TaxBotKERedis:6379
+      - HTTP_USER=root
+      - HTTP_PASSWORD=qwerty
+    ports:
+      - "8085:8081"
+    depends_on:
+      - TaxBotKERedis
+  rabbit:
+    image: rabbitmq:3-management
+    container_name: rabbit
+    hostname: rabbit
+    environment:
+      - RABBITMQ_DEFAULT_USER=admin
+      - RABBITMQ_DEFAULT_PASS=admin
+      - RABBITMQ_DEFAULT_VHOST=/
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+
+volumes:
+  redis_data:
+  postgres-data:

@@ -113,7 +113,6 @@ class MpesaCallback(generics.CreateAPIView):
 class LeadListView(LoginRequiredMixin, generic.ListView):
     template_name = "jobs/lead_list.html"
     context_object_name = "jobs"
-    paginate_by = 5
 
     def get_queryset(self):
         user = self.request.user
@@ -142,12 +141,13 @@ class LeadListView(LoginRequiredMixin, generic.ListView):
         if user.is_organisor:
             context.update({"unassigned_leads": Job.objects.all()})
 
+        '''
         # Add filter parameters to the context
         context['filter_params'] = self.request.GET.dict()
         # Add pagination information to the context
         # Add pagination information to the context
         jobs = context['jobs']
-        jobs
+        
 
         paginator = Paginator(jobs, self.paginate_by)
         page_number = self.request.GET.get('page')
@@ -156,19 +156,18 @@ class LeadListView(LoginRequiredMixin, generic.ListView):
         print(page_obj.count)
 
         '''
-        
-        '''
+
 
         '''context['page_obj'] = page_obj
         context['has_next'] = page_obj.has_next()
         context['has_previous'] = page_obj.has_previous()
-        context['page_range'] = paginator.page_range'''
+        context['page_range'] = paginator.page_range
 
         #page_obj = context.get('page_obj')
         if page_obj:
             context['has_next'] = page_obj.has_next()
             context['has_previous'] = page_obj.has_previous()
-            context['page_range'] = page_obj.paginator.page_range
+            context['page_range'] = page_obj.paginator.page_range'''
 
         return context
 
