@@ -166,6 +166,15 @@ def state_machine(channel, message,file=None):
                     "has_table": False,
                     "keyboard_type": None
                 }
+            elif message["action"] == "haven't filed in a while":
+                response = {"message": ["It looks like you haven't filed your taxes for multiple years.<br><br>" \
+                                        "Redirecting you to our live human agent<br><br>" \
+                                        "To proceed, kindly input your valid phone number to pay KES 1500.00 to proceed."],
+                            "has_table": False,
+                            "keyboard_type": "normal"}
+
+                job.next_step = "GET_PHONE_NUMBER"
+                job.save()
             elif message["text"] == "no_obligations":
                 if job.action == "1":
                     year_of_filing = message['expected_filing_period'].split("/")[-1]
@@ -227,7 +236,6 @@ def state_machine(channel, message,file=None):
             job.save()
 
         elif job.next_step == "UPLOAD_P9_FORM":
-
             response = {
                 "message": ["Extracting P9 tax information, do not interrupt"],
                 "has_table": False,

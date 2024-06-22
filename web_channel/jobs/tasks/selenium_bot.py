@@ -117,6 +117,7 @@ class Itax(object):
         self.already_filed = False
         self.invalid_pin = False
         self.is_blocked = False
+        self.havent_filed_in_a_while = False
 
         self.filing_date = filing_date_from
 
@@ -305,6 +306,8 @@ class Itax(object):
             elif "can be filed after" in alert_text:
                 self.already_filed = True
                 self.has_obligations = False
+            elif "please use the file nil return" in alert_text:
+                self.havent_filed_in_a_while = True
             else:
                 self.has_obligations = True
                 return {"tax_return_period_from": "01/01/2023",
@@ -366,6 +369,7 @@ class Itax(object):
                 if "already filed" in alert_text:
                     self.has_obligations = False
                     self.already_filed = True
+
                 else:
                     self.has_obligations = True
 
