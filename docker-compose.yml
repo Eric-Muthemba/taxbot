@@ -72,7 +72,7 @@ services:
   TaxBotKECRMWorker2:
     image: tax_bot_ke_crm:latest
     restart: on-failure
-    container_name: "TaxBotKECRMWorker"
+    container_name: "TaxBotKECRMWorker2"
     command: >
       sh -c "export READ_DOT_ENV_FILE=True && celery -A app worker --loglevel=INFO  --concurrency=4"
     depends_on:
