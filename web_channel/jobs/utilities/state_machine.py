@@ -223,7 +223,7 @@ def state_machine(channel, message,file=None):
 
             initiate_stkpush(amount=amount,
                                          msisdn=msidn,
-                                         reference = f"{job.channel_id}")
+                                         reference = f"{job.uuid}")
 
             response = {
                 "message": ["Once paid, press continue to proceed.","If you dont receive an stk push, press resend STKpush button."],
@@ -358,7 +358,7 @@ def state_machine(channel, message,file=None):
 
                 initiate_stkpush(amount=amount,
                                  msisdn=msidn,
-                                 reference=f"{job.channel_id}")
+                                 reference=f"{job.uuid}")
 
                 response = {
                     "message": ["STK push retriggered, press continue to proceed.",
